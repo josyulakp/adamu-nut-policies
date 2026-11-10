@@ -95,7 +95,14 @@ It also clones Touch in the Wild and DexScrew into `ext/` at the commits used he
 Rendering is headless (`MUJOCO_GL=egl`, set by the scripts). The first Touch in the Wild run downloads the CLIP
 ViT-B/16 weights through timm.
 
-The model and rollout files are stored with git-lfs. After cloning, run `git lfs install && git lfs pull`.
+The trained models and recorded rollouts are too large for GitHub and are on the Hugging Face Hub at
+[`josyula/adamu-nut-policies`](https://huggingface.co/josyula/adamu-nut-policies) (3.8 GB). Download them into the
+repository root, where `models/` and `rollouts/` are expected:
+
+```bash
+pip install -U huggingface_hub     # provides the hf command
+hf download josyula/adamu-nut-policies --include "models/*" --include "rollouts/*" --local-dir .
+```
 
 ---
 

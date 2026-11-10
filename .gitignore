@@ -14,3 +14,7 @@ __pycache__/
 MUJOCO_LOG.TXT
 space_build/
 pages_build/
+# trained models and rollouts: on the Hugging Face Hub (see README, Setup)
+models/
+rollouts/
+.cache/

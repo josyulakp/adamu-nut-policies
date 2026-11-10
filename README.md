@@ -70,6 +70,7 @@ tw/               Touch in the Wild: sim.py (UMI-convention env + experts), coll
                   config/task/sim_nut.yaml, run_tw.sh
 ds/               DexScrew: nut_rl_env.py (RL env), vec_env.py, heuristic.py (scripted expert),
                   bc_teacher.py, train_ds.py, stage3_bc.py, eval_ds.py, run_ds.sh
+webapp/           interactive evaluation page: server.py, worker.py, registry.py, build_assets.py, static/index.html
 models/           trained models (below)
 rollouts/         recorded evaluation episodes (below)
 results/          per-seed evaluation results (JSON) and training logs
@@ -271,6 +272,33 @@ python eval_ds.py --ckpt ../models/ds/teacher.pth --kind teacher --cond nominal 
 ```bash
 ds/run_ds.sh                     # OUT=<dir> to put training outputs elsewhere (default ds/runs)
 ```
+
+## Interactive evaluation page (`webapp/`)
+
+A local web page for trying the released models on layouts you choose. You drag the nut (and set its yaw) and the
+target pad on a top-down map of the table; the dashed boxes show the training distribution. Then you pick any of the
+19 models and a condition, set a seed and press **Pick**. The episode runs in MuJoCo on the GPU and plays back live
+in a 3D view with readouts, the camera image the policy saw and the FlexiTac pad heatmaps. Runs are kept in a list
+for replay.
+
+```bash
+webapp/run.sh            # http://localhost:8770 on the server (listens on localhost only)
+ssh -L 8770:localhost:8770 <user>@<server>     # then open http://localhost:8770 on your laptop
+```
+
+How it works:
+* `server.py` (stdlib HTTP, `.venv`) serves the page and a small JSON API, and queues episodes.
+* Two `worker.py` processes keep the models on the GPU: `cam` in `.venv` for DP, ACT and DSRL, and `tac` in
+  `.venv-tw` for Touch in the Wild and DexScrew. Each streams one line per control step: body poses, gripper,
+  camera JPEG and tactile image.
+* The layout reaches the simulator through the `layout` override in `NutPickPlaceEnv.reset`
+  (`adamu_nut_yam/env.py`), which every environment inherits. Everything else in the episode comes from the seed,
+  and the success test is the one used offline.
+* `build_assets.py` exports the two scenes as browser geometry (run automatically on first start).
+
+An episode takes 2 to 15 s of compute: DexScrew ~2 s, DP / ACT / DSRL 3 to 10 s, Touch in the Wild ~10 to 15 s.
+The first run of each model adds a few seconds to load it. To share it beyond an SSH tunnel, put it behind an
+authenticating reverse proxy: the API runs arbitrary layouts on your GPU.
 
 ---
 

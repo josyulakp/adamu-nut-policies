@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nut Pick Eval</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #eef0f2; --panel: #ffffff; --ink: #1b2229; --muted: #5d6873; --line: #d5dae0; --soft: #f4f6f8;
+  --accent: #2f6fb0; --accent-ink: #ffffff; --ok: #2f7d4f; --bad: #b43a2e; --warn: #9a6a12; --stage: #dfe3e8;
+  --table: #d9cbb4; --region: #2f6fb0; --target: #4caf6e; --nut: #6b7580;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161a; --panel: #1a2026; --ink: #e4e8ec; --muted: #94a0ab; --line: #2b333b; --soft: #20272e;
+  --accent: #6aa8e8; --accent-ink: #0d1013; --ok: #5cc28a; --bad: #ef7a6c; --warn: #e0b050; --stage: #0d1013;
+  --table: #4a4236; --region: #6aa8e8; --target: #5cc28a; --nut: #b8c0c8; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161a; --panel: #1a2026; --ink: #e4e8ec; --muted: #94a0ab; --line: #2b333b; --soft: #20272e;
+  --accent: #6aa8e8; --accent-ink: #0d1013; --ok: #5cc28a; --bad: #ef7a6c; --warn: #e0b050; --stage: #0d1013;
+  --table: #4a4236; --region: #6aa8e8; --target: #5cc28a; --nut: #b8c0c8; color-scheme: dark }
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.45;
+  padding: 14px max(16px, env(safe-area-inset-right, 0px)) 28px max(16px, env(safe-area-inset-left, 0px)) }
+header { margin-bottom: 12px }
+h1 { font-size: 1.25rem; font-weight: 600; margin: 0 }
+.sub { color: var(--muted); font-size: .9rem; max-width: 80ch; margin: 2px 0 0 }
+.app { display: grid; gap: 14px }
+@media (min-width: 980px) { .app { grid-template-columns: minmax(0, 1fr) 380px; align-items: start } }
+section, aside { min-width: 0; display: grid; gap: 10px }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px }
+.card h2 { font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 8px }
+.stage { position: relative; background: var(--stage); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  aspect-ratio: 4 / 3; touch-action: none }
+.stage canvas { display: block; width: 100%; height: 100% }
+.badge { position: absolute; top: 10px; right: 10px; font: 600 .75rem var(--font-ui); letter-spacing: .05em; text-transform: uppercase;
+  padding: 4px 9px; border-radius: 999px; background: var(--panel); color: var(--muted); border: 1px solid var(--line) }
+.badge.ok { background: var(--ok); color: var(--accent-ink); border-color: transparent }
+.badge.bad { background: var(--bad); color: #fff; border-color: transparent }
+.badge.live { background: var(--accent); color: var(--accent-ink); border-color: transparent }
+.overlay { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: .9rem; background: var(--stage) }
+.transport { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center }
+button { font: inherit; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  padding: 7px 12px; cursor: pointer; min-height: 36px }
+button:hover:not(:disabled) { border-color: var(--accent) }
+button:disabled { opacity: .5; cursor: default }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 600; width: 100%; min-height: 44px; font-size: 1rem }
+input[type=range] { width: 100%; accent-color: var(--accent) }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums }
+.time { font-family: var(--font-mono); font-size: .85rem; color: var(--muted); min-width: 5.5em; text-align: right }
+.readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px }
+.ro { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px }
+.ro .k { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em }
+.ro .v { font-family: var(--font-mono); font-size: 1rem }
+.sense { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, max-content)); gap: 10px }
+.sense img { width: 100%; max-width: 336px; image-rendering: auto; border-radius: 6px; background: var(--soft); display: block }
+.pads { display: flex; gap: 10px; align-items: flex-end }
+.pads figure { margin: 0; text-align: center; font-size: .75rem; color: var(--muted) }
+.pads canvas { width: 48px; height: 128px; image-rendering: pixelated; border-radius: 4px; background: #000; display: block }
+label.f { display: grid; gap: 4px; font-size: .82rem; color: var(--muted); margin-bottom: 9px }
+select, input[type=number] { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 9px; width: 100%; min-height: 36px }
+.seg { display: flex; flex-wrap: wrap; gap: 6px }
+.seg button { flex: 1 1 auto; padding: 6px 8px; font-size: .85rem }
+.seg button[aria-pressed=true] { background: var(--accent); color: var(--accent-ink); border-color: transparent }
+.row { display: flex; gap: 8px; align-items: center }
+.row > * { flex: 1 }
+.note { font-size: .82rem; color: var(--muted); margin: 0 }
+.warn { color: var(--warn) }
+svg.map { width: 100%; display: block; border-radius: 8px; background: var(--soft); touch-action: none; user-select: none }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .78rem; color: var(--muted); margin-top: 6px }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px }
+#status { font-size: .88rem; min-height: 1.3em; margin: 8px 0 0 }
+.runs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 260px; overflow: auto }
+.runs button { width: 100%; text-align: left; display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; font-size: .84rem }
+.runs button[aria-current=true] { border-color: var(--accent) }
+.dot { width: 8px; height: 8px; border-radius: 50% }
+</style>
+</head>
+<body>
+<header>
+  <h1>Nut pick: interactive evaluation</h1>
+  <p class="sub">Put the nut and the target pad anywhere on the front of the table, choose a trained policy and a condition, and press
+  Pick. The episode runs live in MuJoCo on the server and streams here. The dashed boxes show where the nut and target were during
+  training; placements outside them test generalisation.</p>
+</header>
+<div class="app">
+  <section>
+    <div class="stage" id="stage">
+      <canvas id="view" aria-label="3D view of the robot, table and nut"></canvas>
+      <span class="badge" id="badge">layout</span>
+      <div class="overlay" id="loading">Loading scene…</div>
+    </div>
+    <div class="transport">
+      <button id="play" aria-label="Play">Play</button>
+      <input type="range" id="scrub" min="0" max="0" value="0" step="1" aria-label="Episode time">
+      <span class="time" id="time">0.00 s</span>
+    </div>
+    <div class="readouts">
+      <div class="ro"><div class="k">Nut to target</div><div class="v" id="r-xy">–</div></div>
+      <div class="ro"><div class="k">Nut height</div><div class="v" id="r-h">–</div></div>
+      <div class="ro"><div class="k">Grip</div><div class="v" id="r-g">–</div></div>
+      <div class="ro"><div class="k">Contact</div><div class="v" id="r-c">–</div></div>
+    </div>
+    <div class="sense">
+      <div class="card" id="camcard" hidden><h2 id="camtitle">What the policy sees</h2><img id="cam" alt="Camera image the policy received at this step"></div>
+      <div class="card" id="padcard" hidden><h2>FlexiTac pads · 32 × 12</h2>
+        <div class="pads"><figure><canvas id="padL" width="12" height="32"></canvas>left</figure>
+        <figure><canvas id="padR" width="12" height="32"></canvas>right</figure></div>
+        <p class="note" style="margin-top:6px">tip at top; brighter = more pressure</p></div>
+    </div>
+  </section>
+  <aside>
+    <div class="card">
+      <h2>Policy</h2>
+      <label class="f">Model<select id="model"></select></label>
+      <p class="note" id="modelnote"></p>
+      <label class="f" style="margin-top:9px">Condition<div class="seg" id="conds" role="group" aria-label="Condition"></div></label>
+      <div class="row">
+        <label class="f">Seed<input type="number" id="seed" value="2000000" min="0" step="1"></label>
+        <button id="reseed" style="flex:0 0 auto;margin-top:10px" title="Random seed">New seed</button>
+      </div>
+      <p class="note">The seed sets the arm's start jitter, sensor noise and, in the randomised conditions, appearance and physics.</p>
+    </div>
+    <div class="card">
+      <h2>Layout · top view</h2>
+      <svg class="map" id="map" role="img" aria-label="Table seen from above; drag the nut or the target"></svg>
+      <div class="legend"><span><i style="background:var(--nut)"></i>nut</span><span><i style="background:var(--target)"></i>target pad</span>
+        <span><i style="border:1.5px dashed var(--region)"></i>training region</span><span>robot below</span></div>
+      <label class="f" style="margin-top:10px">Nut yaw <span class="mono" id="yawv">0°</span><input type="range" id="yaw" min="0" max="60" step="1" value="20"></label>
+      <div class="row"><button id="useseed">Seed's layout</button><button id="randin">Random (training region)</button></div>
+      <p class="note warn" id="warn" hidden></p>
+    </div>
+    <div class="card">
+      <button class="primary" id="pick">Pick</button>
+      <p id="status" role="status"></p>
+    </div>
+    <div class="card">
+      <h2>Runs this session</h2>
+      <ul class="runs" id="runs"><li class="note">None yet.</li></ul>
+    </div>
+  </aside>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const $ = (id) => document.getElementById(id);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const getJSON = (u) => fetch(u).then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.error || r.status); }));
+const postJSON = (u, b) => fetch(u, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) })
+  .then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.error || r.status); }));
+const b64f32 = (s) => { const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Float32Array(u.buffer); };
+const b64u8 = (s) => { const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+
+// ------------------------------------------------------------------ 3D scene
+const canvas = $("view"), stage = $("stage");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 4 / 3, 0.01, 30); camera.up.set(0, 0, 1);
+const controls = new OrbitControls(camera, canvas); controls.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f96, 1.7));
+const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(1.5, -1.2, 3); scene.add(sun);
+const applyBg = () => { scene.background = new THREE.Color(css("--stage") || "#dfe3e8"); drawMap(); };
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyBg);
+new ResizeObserver(() => { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }).observe(stage);
+
+const variants = new Map(); let V = null;     // active variant record
+function prim(t, s) {
+  if (t === "box") return new THREE.BoxGeometry(2 * s[0], 2 * s[1], 2 * s[2]);
+  if (t === "sphere") return new THREE.SphereGeometry(s[0], 24, 16);
+  if (t === "cylinder") return new THREE.CylinderGeometry(s[0], s[0], 2 * s[1], 40).rotateX(Math.PI / 2);
+  if (t === "capsule") return new THREE.CapsuleGeometry(s[0], 2 * s[1], 8, 16).rotateX(Math.PI / 2);
+  if (t === "plane") return new THREE.PlaneGeometry(6, 6);
+  return null;
+}
+async function loadVariant(v) {
+  if (variants.has(v)) return variants.get(v);
+  const [info, buf] = await Promise.all([getJSON(`scene_${v}.json`), fetch(`meshes_${v}.bin`).then((r) => r.arrayBuffer())]);
+  const world = new THREE.Group(), bodies = [];
+  for (let b = 0; b < info.nbody; b++) { const g = new THREE.Group(); bodies.push(g); world.add(g); }
+  for (const e of info.geoms) {
+    let geo;
+    if (e.t === "mesh") {
+      const r = info.meshes[e.m]; geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(buf, r.v, r.nv * 3), 3));
+      geo.setIndex(new THREE.BufferAttribute(new Uint32Array(buf, r.f, r.nf * 3), 1));
+      geo = geo.toNonIndexed(); geo.computeVertexNormals();
+    } else geo = prim(e.t, e.s);
+    if (!geo) continue;
+    const [r, g, b, a] = e.c, nut = e.n === "nut_visual";
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: new THREE.Color(r, g, b), roughness: nut ? 0.3 : 0.6,
+      metalness: nut ? 0.6 : 0.1, transparent: a < 0.99, opacity: a, side: e.t === "plane" ? THREE.DoubleSide : THREE.FrontSide }));
+    mesh.position.set(...e.p); mesh.quaternion.set(e.q[1], e.q[2], e.q[3], e.q[0]);
+    bodies[e.b].add(mesh);
+  }
+  const rec = { v, info, world, bodies }; variants.set(v, rec); return rec;
+}
+let firstView = true;
+async function useVariant(v) {
+  if (V && V.v === v) return;
+  const rec = await loadVariant(v);
+  for (const r of variants.values()) if (r.world.parent) scene.remove(r.world);
+  scene.add(rec.world); V = rec;
+  if (firstView) { const l = rec.info.look; controls.target.set(...l); camera.position.set(l[0] + 0.75, l[1] - 0.55, l[2] + 0.45); controls.update(); firstView = false; }
+}
+function applyPose(P) {
+  const n = V.bodies.length;
+  for (let b = 0; b < n; b++) { const o = b * 7; V.bodies[b].position.set(P[o], P[o + 1], P[o + 2]); V.bodies[b].quaternion.set(P[o + 4], P[o + 5], P[o + 6], P[o + 3]); }
+}
+function placeMarkers() {   // move nut and target bodies immediately while dragging (the server preview then settles them)
+  if (!V) return;
+  const nb = V.bodies[V.info.nut_body], tb = V.bodies[V.info.target_body];
+  nb.position.set(layout.nut[0], layout.nut[1], nb.position.z); nb.quaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), layout.nut[2]);
+  tb.position.set(layout.target[0], layout.target[1], tb.position.z);
+}
+
+// ------------------------------------------------------------------ config, model picker
+const cfg = await getJSON("api/config");
+const MODELS = Object.fromEntries(cfg.models.map((m) => [m.id, m]));
+const R = cfg.regions;
+let layout = { nut: [0.32, -0.26, 20 * Math.PI / 180], target: [0.31, -0.03] };
+let cond = null;
+{
+  const groups = {};
+  for (const m of cfg.models) (groups[m.group] ||= []).push(m);
+  for (const [g, ms] of Object.entries(groups)) {
+    const og = document.createElement("optgroup"); og.label = g;
+    for (const m of ms) { const o = document.createElement("option"); o.value = m.id; o.textContent = `${g}: ${m.label}`; og.append(o); }
+    $("model").append(og);
+  }
+}
+function modelChanged() {
+  const m = MODELS[$("model").value];
+  const r = cfg.rates[m.id];
+  const grip = m.variant === "tac" ? "YAM gripper with FlexiTac pads" : "plain YAM gripper, head + wrist cameras";
+  $("modelnote").textContent = `${grip}.` + (r ? ` Ideal-condition success in the offline evaluation: ${r[0]}/${r[1]}.` : "");
+  const seg = $("conds"); seg.textContent = "";
+  if (!m.conds.some(([c]) => c === cond)) cond = m.conds[0][0];
+  for (const [c, lab] of m.conds) {
+    const b = document.createElement("button"); b.textContent = lab; b.setAttribute("aria-pressed", String(c === cond));
+    b.onclick = () => { cond = c; for (const x of seg.children) x.setAttribute("aria-pressed", String(x === b)); };
+    seg.append(b);
+  }
+  $("camcard").hidden = m.worker === "tac" && m.kind !== "tw";
+  $("camtitle").textContent = m.kind === "tw" ? "Wrist camera (policy input)" : m.worker === "cam" ? "Head | wrist camera (policy input)" : "";
+  $("padcard").hidden = m.variant !== "tac";
+  if (!running) preview();
+}
+$("model").onchange = modelChanged;
+$("reseed").onclick = () => { $("seed").value = 2000000 + Math.floor(Math.random() * 1e6); };
+
+// ------------------------------------------------------------------ top-view map (SVG: screen x = -world y, screen y = -world x)
+const svgNS = "http://www.w3.org/2000/svg", map = $("map");
+const [PX, PY] = R.place, [TX, TY] = R.table;
+const VB = { x: -(PY[1] + 0.02), y: -(PX[1] + 0.02), w: (PY[1] - PY[0]) + 0.04, h: (PX[1] - PX[0]) + 0.06 };
+map.setAttribute("viewBox", `${VB.x} ${VB.y} ${VB.w} ${VB.h}`);
+const el = (tag, attrs, parent = map) => { const e = document.createElementNS(svgNS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); parent.append(e); return e; };
+const rectOf = ([[x0, x1], [y0, y1]]) => ({ x: -y1, y: -x1, width: y1 - y0, height: x1 - x0 });
+let nutG, tgtC, tgtLabel;
+function drawMap() {
+  map.textContent = "";
+  el("rect", { ...rectOf(R.table), fill: css("--table"), rx: 0.004 });
+  el("rect", { ...rectOf(R.place), fill: "none", stroke: css("--muted"), "stroke-width": 0.002, opacity: 0.5 });
+  el("rect", { ...rectOf(R.nut), fill: css("--region"), "fill-opacity": 0.08, stroke: css("--region"), "stroke-width": 0.0025, "stroke-dasharray": "0.008 0.005" });
+  el("rect", { ...rectOf(R.target), fill: css("--region"), "fill-opacity": 0.08, stroke: css("--region"), "stroke-width": 0.0025, "stroke-dasharray": "0.008 0.005" });
+  const t = el("text", { x: -R.nut[1][1] + 0.004, y: -R.nut[0][1] - 0.006, "font-size": 0.016, fill: css("--region"), "font-family": "IBM Plex Sans, sans-serif" }); t.textContent = "nut region";
+  const t2 = el("text", { x: -R.target[1][1] + 0.004, y: -R.target[0][1] - 0.006, "font-size": 0.016, fill: css("--region"), "font-family": "IBM Plex Sans, sans-serif" }); t2.textContent = "target region";
+  const rb = el("text", { x: 0, y: VB.y + VB.h - 0.008, "font-size": 0.016, fill: css("--muted"), "text-anchor": "middle", "font-family": "IBM Plex Sans, sans-serif" }); rb.textContent = "▼ robot";
+  tgtC = el("circle", { r: 0.035, fill: css("--target"), "fill-opacity": 0.75, stroke: css("--target"), "stroke-width": 0.002, style: "cursor:grab" });
+  tgtC.dataset.drag = "target";
+  nutG = el("g", { style: "cursor:grab" }); nutG.dataset.drag = "nut";
+  el("circle", { r: 0.022, fill: "transparent", stroke: css("--nut"), "stroke-width": 0.0015, "stroke-dasharray": "0.004 0.003" }, nutG);
+  const pts = [...Array(6)].map((_, i) => { const a = i * Math.PI / 3; return `${0.0127 * Math.cos(a)},${0.0127 * Math.sin(a)}`; }).join(" ");
+  el("polygon", { points: pts, fill: css("--nut"), stroke: css("--ink"), "stroke-width": 0.0012 }, nutG);
+  el("circle", { r: 0.0045, fill: css("--soft") }, nutG);
+  updateMap();
+}
+function updateMap() {
+  if (!nutG) return;
+  const [nx, ny, yaw] = layout.nut, [tx, ty] = layout.target;
+  tgtC.setAttribute("cx", -ty); tgtC.setAttribute("cy", -tx);
+  // world yaw about +z; in screen coords (x=-y, y=-x) a world rotation by yaw is a screen rotation by -yaw
+  nutG.setAttribute("transform", `translate(${-ny} ${-nx}) rotate(${-yaw * 180 / Math.PI})`);
+  const inside = (p, [[x0, x1], [y0, y1]]) => p[0] >= x0 && p[0] <= x1 && p[1] >= y0 && p[1] <= y1;
+  const msgs = [];
+  if (!inside(layout.nut, R.nut)) msgs.push("the nut is outside its training region");
+  if (!inside(layout.target, R.target)) msgs.push("the target is outside its training region");
+  if (Math.hypot(nx - tx, ny - ty) < 0.05) msgs.push("the nut starts on or next to the target");
+  $("warn").hidden = !msgs.length; $("warn").textContent = msgs.length ? "Note: " + msgs.join("; ") + "." : "";
+  $("yaw").value = Math.round(((yaw * 180 / Math.PI) % 60 + 60) % 60); $("yawv").textContent = `${$("yaw").value}°`;
+}
+const toWorld = (ev) => { const p = map.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY; const q = p.matrixTransform(map.getScreenCTM().inverse()); return [-q.y, -q.x]; };
+const clampP = ([x, y]) => [Math.min(Math.max(x, PX[0]), PX[1]), Math.min(Math.max(y, PY[0]), PY[1])];
+let dragging = null;
+map.addEventListener("pointerdown", (ev) => {
+  if (running) return;
+  const tgt = ev.target.closest("[data-drag]");
+  dragging = tgt ? tgt.dataset.drag : "nut";
+  map.setPointerCapture(ev.pointerId); move(ev);
+});
+map.addEventListener("pointermove", (ev) => { if (dragging) move(ev); });
+map.addEventListener("pointerup", () => { if (dragging) { dragging = null; preview(); } });
+function move(ev) {
+  const [x, y] = clampP(toWorld(ev));
+  if (dragging === "nut") layout.nut = [x, y, layout.nut[2]]; else layout.target = [x, y];
+  usingSeedLayout = false; episode = null; setPlaying(false); updateMap(); placeMarkers(); showLayoutState();
+}
+$("yaw").oninput = () => { layout.nut[2] = $("yaw").value * Math.PI / 180; usingSeedLayout = false; updateMap(); placeMarkers(); schedulePreview(); };
+$("randin").onclick = () => {
+  const u = (a, b) => a + Math.random() * (b - a);
+  layout = { nut: [u(...R.nut[0]), u(...R.nut[1]), u(0, Math.PI / 3)], target: [u(...R.target[0]), u(...R.target[1])] };
+  usingSeedLayout = false; updateMap(); preview();
+};
+let usingSeedLayout = false;
+$("useseed").onclick = () => { usingSeedLayout = true; preview(); };
+$("seed").onchange = () => { if (usingSeedLayout) preview(); };
+
+// ------------------------------------------------------------------ preview + playback
+let previewPose = null, previewTimer = 0;
+function schedulePreview() { clearTimeout(previewTimer); previewTimer = setTimeout(preview, 150); }
+async function preview() {
+  const m = MODELS[$("model").value];
+  await useVariant(m.variant);
+  const res = await postJSON("api/preview", { model: m.id, seed: +$("seed").value, layout: usingSeedLayout ? null : layout });
+  layout = { nut: res.nut, target: res.target.slice(0, 2) };
+  updateMap();
+  if (running) return;
+  previewPose = b64f32(res.pose); episode = null; showLayoutState();
+}
+function showLayoutState() {
+  if (episode) return;
+  if (previewPose) applyPose(previewPose);
+  placeMarkers();
+  $("badge").className = "badge"; $("badge").textContent = "layout";
+  $("scrub").max = 0; $("scrub").value = 0; $("time").textContent = "0.00 s";
+  setReadouts(null);
+}
+
+let episode = null, frame = 0, playing = false, clock = 0, running = false;
+function setReadouts(f) {
+  $("r-xy").textContent = f ? `${f.xy_mm.toFixed(1)} mm` : "–";
+  $("r-h").textContent = f ? `${f.h_mm >= 0 ? "+" : ""}${f.h_mm.toFixed(1)} mm` : "–";
+  $("r-g").textContent = f ? `${f.grip.toFixed(2)}${f.grip > 0.15 ? " · closed" : " · open"}` : "–";
+  $("r-c").textContent = f ? (f.contact[0] && f.contact[1] ? "both pads" : f.contact[0] ? "left" : f.contact[1] ? "right" : "none") : "–";
+}
+const padCtx = [$("padL").getContext("2d"), $("padR").getContext("2d")];
+const padImg = padCtx.map((c) => c.createImageData(12, 32));
+function heat(v) { const t = v / 255; return [Math.min(255, 510 * t), Math.max(0, Math.min(255, 400 * (t - 0.35))), Math.max(0, 255 * (t - 0.8) * 5)]; }
+function showFrame(i) {
+  if (!episode || !episode.frames.length) return;
+  frame = Math.max(0, Math.min(i, episode.frames.length - 1));
+  const f = episode.frames[frame];
+  f.P ||= b64f32(f.pose); applyPose(f.P);
+  $("scrub").max = Math.max(0, (episode.end ? episode.frames.length : Math.max(episode.frames.length, 300)) - 1);
+  $("scrub").value = frame; $("time").textContent = `${(frame * 0.05).toFixed(2)} s`;
+  setReadouts(f);
+  if (f.img && $("cam").dataset.f !== `${episode.id}:${frame}`) { $("cam").src = "data:image/jpeg;base64," + f.img; $("cam").dataset.f = `${episode.id}:${frame}`; }
+  if (f.tact) {
+    const u = f.T ||= b64u8(f.tact);
+    for (let p = 0; p < 2; p++) {
+      const d = padImg[p].data;
+      for (let k = 0; k < 384; k++) { const [r, g, b] = heat(u[p * 384 + k]); d[4 * k] = r; d[4 * k + 1] = g; d[4 * k + 2] = b; d[4 * k + 3] = 255; }
+      padCtx[p].putImageData(padImg[p], 0, 0);
+    }
+  }
+}
+function setPlaying(p) { playing = p; $("play").textContent = p ? "Pause" : "Play"; $("play").setAttribute("aria-label", p ? "Pause" : "Play"); }
+$("play").onclick = () => { if (!episode) return; if (!playing && frame >= episode.frames.length - 1 && episode.end) { frame = 0; clock = 0; } else clock = frame; setPlaying(!playing); };
+$("scrub").oninput = (e) => { if (!episode) return; setPlaying(false); showFrame(+e.target.value); clock = frame; };
+
+// ------------------------------------------------------------------ runs
+const runs = [];
+function badgeFor(ep) {
+  const b = $("badge");
+  if (!ep.end) { b.className = "badge live"; b.textContent = ep.frames.length ? "live" : "queued"; return; }
+  if (ep.end.error) { b.className = "badge bad"; b.textContent = "error"; return; }
+  b.className = ep.end.success ? "badge ok" : "badge bad"; b.textContent = ep.end.success ? "placed" : "not placed";
+}
+function renderRuns() {
+  const ul = $("runs"); ul.textContent = "";
+  if (!runs.length) { ul.innerHTML = '<li class="note">None yet.</li>'; return; }
+  for (const r of [...runs].reverse()) {
+    const li = document.createElement("li"), b = document.createElement("button");
+    const color = !r.end ? "var(--accent)" : r.end.success ? "var(--ok)" : "var(--bad)";
+    const m = MODELS[r.model], c = m.conds.find(([k]) => k === r.cond)[1];
+    b.innerHTML = `<span class="dot" style="background:${color}"></span><span>${m.group}: ${m.label}<br><span class="note">${c} · seed ${r.seed}</span></span>` +
+      `<span class="mono note">${r.end ? (r.end.error ? "error" : r.end.success ? `${(r.end.xy_err * 1000).toFixed(0)} mm` : "fail") : "…"}</span>`;
+    b.setAttribute("aria-current", String(r === episode));
+    b.onclick = async () => { await useVariant(MODELS[r.model].variant); episode = r; layout = r.layout; updateMap(); badgeFor(r); frame = 0; clock = 0; showFrame(0); setPlaying(true); renderRuns(); };
+    li.append(b); ul.append(li);
+  }
+}
+$("pick").onclick = async () => {
+  const m = MODELS[$("model").value], seed = +$("seed").value;
+  await useVariant(m.variant);
+  const lay = usingSeedLayout ? null : { nut: [...layout.nut], target: [...layout.target] };
+  let job;
+  try { job = (await postJSON("api/run", { model: m.id, cond, seed, layout: lay })).job; }
+  catch (e) { $("status").textContent = "Could not start: " + e.message; return; }
+  const ep = { id: job, model: m.id, cond, seed, layout: { nut: [...layout.nut], target: [...layout.target] }, frames: [], end: null };
+  runs.push(ep); episode = ep; frame = 0; clock = 0; running = true; $("pick").disabled = true;
+  setPlaying(true); badgeFor(ep); renderRuns();
+  const t0 = performance.now();
+  while (!ep.end) {
+    let r;
+    try { r = await getJSON(`api/job?id=${job}&from=${ep.frames.length}`); }
+    catch (e) { $("status").textContent = "Lost contact with the server: " + e.message; break; }
+    ep.frames.push(...r.frames);
+    if (r.end) ep.end = r.end;
+    const sec = ((performance.now() - t0) / 1000).toFixed(0);
+    $("status").textContent = r.state === "queued" ? `Queued behind ${r.queue} episode${r.queue === 1 ? "" : "s"}…`
+      : ep.end ? "" : r.status === "loading model" && !ep.frames.length ? `Loading the model on the GPU… ${sec} s` : `Running · step ${ep.frames.length - 1} · ${sec} s`;
+    if (episode === ep) badgeFor(ep);
+    if (!ep.end) await new Promise((res) => setTimeout(res, 150));
+  }
+  running = false; $("pick").disabled = false;
+  if (ep.end) {
+    const e = ep.end;
+    $("status").textContent = e.error ? `Error: ${e.error}` : `${e.success ? "Placed" : "Not placed"} after ${(e.steps * 0.05).toFixed(1)} s of robot time` +
+      (Number.isFinite(e.xy_err) ? ` · final offset ${(e.xy_err * 1000).toFixed(1)} mm` : "") + (e.fail ? " · nut knocked over" : "") + ` · computed in ${e.seconds ?? "?"} s`;
+  }
+  if (episode === ep) badgeFor(ep);
+  renderRuns();
+};
+
+// ------------------------------------------------------------------ loop
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (episode && playing && episode.frames.length) {
+    clock = Math.min(clock + dt * 20, episode.frames.length - 1);
+    if (Math.floor(clock) !== frame) showFrame(Math.floor(clock));
+    if (episode.end && frame >= episode.frames.length - 1) setPlaying(false);
+  }
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+
+// ------------------------------------------------------------------ start
+drawMap(); applyBg();
+$("model").value = "dp_sim_only";
+modelChanged();
+await preview();
+$("loading").hidden = true;
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

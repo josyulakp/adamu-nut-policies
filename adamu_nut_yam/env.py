@@ -99,9 +99,13 @@ class NutPickPlaceEnv:
             d.qpos[a] = grip_targets(0.0)["gripper"]
         nx, ny = rng.uniform(*NUT_REGION[0]), rng.uniform(*NUT_REGION[1])
         yaw = rng.uniform(0, np.pi / 3)
+        tx, ty = rng.uniform(*TARGET_REGION[0]), rng.uniform(*TARGET_REGION[1])
+        layout = getattr(self, "layout", None)     # optional override: {"nut": (x, y, yaw), "target": (x, y)}
+        if layout:
+            nx, ny, yaw = layout.get("nut", (nx, ny, yaw))
+            tx, ty = layout.get("target", (tx, ty))
         d.qpos[self.nut_q:self.nut_q + 3] = [nx, ny, TABLE_TOP + NUT_HALF_H + 2e-4]
         d.qpos[self.nut_q + 3:self.nut_q + 7] = [np.cos(yaw / 2), 0, 0, np.sin(yaw / 2)]
-        tx, ty = rng.uniform(*TARGET_REGION[0]), rng.uniform(*TARGET_REGION[1])
         m.body_pos[self.target_body] = [tx, ty, TABLE_TOP]
         # hold every actuator at its current joint position
         for i in range(m.nu):

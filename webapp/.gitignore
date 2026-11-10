@@ -1,0 +1,3 @@
+logs/
+static/scene_*.json
+static/meshes_*.bin

@@ -1,0 +1,532 @@
+{
+ "rows": [
+  {
+   "name": "Scripted expert, Dexterous hand",
+   "n": 217,
+   "rate": 0.9216589861751152,
+   "ci": 0.036191206868355835,
+   "ideal": 0.9216589861751152,
+   "ideal_ci": 0.036191206868355835,
+   "ideal_n": 217
+  },
+  {
+   "name": "Scripted expert, YAM gripper",
+   "n": 200,
+   "rate": 1.0,
+   "ci": 0.009423002959160447,
+   "ideal": 1.0,
+   "ideal_ci": 0.009423002959160447,
+   "ideal_n": 200
+  },
+  {
+   "name": "BC 25 demos, Dexterous hand",
+   "n": 300,
+   "rate": 0.22,
+   "ci": 0.06572941071798327,
+   "ideal": 0.22,
+   "ideal_ci": 0.06572941071798327,
+   "ideal_n": 300
+  },
+  {
+   "name": "BC 25 demos, YAM gripper",
+   "n": 300,
+   "rate": 0.2833333333333333,
+   "ci": 0.07589778594340622,
+   "ideal": 0.2833333333333333,
+   "ideal_ci": 0.07589778594340622,
+   "ideal_n": 300
+  },
+  {
+   "name": "BC 50 demos, Dexterous hand",
+   "n": 300,
+   "rate": 0.5833333333333334,
+   "ci": 0.08724709055957743,
+   "ideal": 0.5833333333333334,
+   "ideal_ci": 0.08724709055957743,
+   "ideal_n": 300
+  },
+  {
+   "name": "BC 50 demos, YAM gripper",
+   "n": 300,
+   "rate": 0.8466666666666667,
+   "ci": 0.06252114051351845,
+   "ideal": 0.8466666666666667,
+   "ideal_ci": 0.06252114051351845,
+   "ideal_n": 300
+  },
+  {
+   "name": "BC 100 demos, Dexterous hand",
+   "n": 300,
+   "rate": 0.8433333333333334,
+   "ci": 0.07589778594340615,
+   "ideal": 0.8433333333333334,
+   "ideal_ci": 0.07589778594340615,
+   "ideal_n": 300
+  },
+  {
+   "name": "BC 100 demos, YAM gripper",
+   "n": 300,
+   "rate": 0.8833333333333333,
+   "ci": 0.3516311389478722,
+   "ideal": 0.8833333333333333,
+   "ideal_ci": 0.3516311389478722,
+   "ideal_n": 300
+  },
+  {
+   "name": "BC 200 demos, Dexterous hand",
+   "n": 300,
+   "rate": 0.8566666666666667,
+   "ci": 0.03965864623912241,
+   "ideal": 0.8566666666666667,
+   "ideal_ci": 0.03965864623912241,
+   "ideal_n": 300
+  },
+  {
+   "name": "BC 200 demos, YAM gripper",
+   "n": 300,
+   "rate": 0.98,
+   "ci": 0.049686764166459244,
+   "ideal": 0.98,
+   "ideal_ci": 0.049686764166459244,
+   "ideal_n": 300
+  },
+  {
+   "name": "Diffusion Policy (images), 10 real demos \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.08,
+   "ci": 0.07841801109742318,
+   "ideal": 0.0,
+   "ideal_ci": 0.035675017087159366,
+   "ideal_n": 50
+  },
+  {
+   "name": "Diffusion Policy (images), 50 real demos \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.44,
+   "ci": 0.13266112994810567,
+   "ideal": 0.0,
+   "ideal_ci": 0.035675017087159366,
+   "ideal_n": 50
+  },
+  {
+   "name": "Diffusion Policy (images), 100 real demos \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.74,
+   "ci": 0.11841021168816267,
+   "ideal": 0.0,
+   "ideal_ci": 0.035675017087159366,
+   "ideal_n": 50
+  },
+  {
+   "name": "Diffusion Policy (images), 300 sim demos \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.02,
+   "ci": 0.050708848314696534,
+   "ideal": 0.8,
+   "ideal_ci": 0.10896871079255677,
+   "ideal_n": 50
+  },
+  {
+   "name": "Diffusion Policy (images), 300 sim + 10 real, \u03b1 0.25 \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.18,
+   "ci": 0.10513118361124409,
+   "ideal": 0.44,
+   "ideal_ci": 0.13266112994810567,
+   "ideal_n": 50
+  },
+  {
+   "name": "Diffusion Policy (images), 300 sim + 10 real, \u03b1 0.5 \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.12,
+   "ci": 0.09093777587999467,
+   "ideal": 0.34,
+   "ideal_ci": 0.12704830911728043,
+   "ideal_n": 50
+  },
+  {
+   "name": "Diffusion Policy (images), 300 sim + 50 real, \u03b1 0.5 \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.74,
+   "ci": 0.11841021168816267,
+   "ideal": 0.64,
+   "ideal_ci": 0.12860337511257586,
+   "ideal_n": 50
+  },
+  {
+   "name": "ACT (images), 50 real demos \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.26,
+   "ci": 0.11841021168816267,
+   "ideal": 0.14,
+   "ideal_ci": 0.09617855968252614,
+   "ideal_n": 50
+  },
+  {
+   "name": "ACT (images), 300 sim demos \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.08,
+   "ci": 0.07841801109742318,
+   "ideal": 0.14,
+   "ideal_ci": 0.09617855968252614,
+   "ideal_n": 50
+  },
+  {
+   "name": "ACT (images), 300 sim + 10 real, \u03b1 0.5 \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.1,
+   "ci": 0.0850648896781564,
+   "ideal": 0.14,
+   "ideal_ci": 0.09617855968252614,
+   "ideal_n": 50
+  },
+  {
+   "name": "ACT (images), 300 sim + 50 real, \u03b1 0.5 \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.42,
+   "ci": 0.13196003038827617,
+   "ideal": 0.18,
+   "ideal_ci": 0.10513118361124409,
+   "ideal_n": 50
+  },
+  {
+   "name": "DSRL (Diffusion Policy 300 sim + 50 real, \u03b1 0.5, +1500 online episodes) \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.64,
+   "ci": 0.12860337511257586,
+   "ideal": 0.72,
+   "ideal_ci": 0.12095686394154652,
+   "ideal_n": 50
+  },
+  {
+   "name": "DSRL (Diffusion Policy 50 real demos, +1500 online episodes) \u00b7 real stand-in",
+   "n": 50,
+   "rate": 0.4,
+   "ci": 0.1310531055549744,
+   "ideal": 0.0,
+   "ideal_ci": 0.035675017087159366,
+   "ideal_n": 50
+  },
+  {
+   "name": "Touch in the Wild DP, wrist camera only \u00b7 FlexiTac YAM, nominal",
+   "n": 50,
+   "rate": 0.76,
+   "ci": 0.11557848486660079,
+   "ideal": 0.76,
+   "ideal_ci": 0.11557848486660079,
+   "ideal_n": 50
+  },
+  {
+   "name": "Touch in the Wild DP, wrist camera only \u00b7 FlexiTac YAM, bump",
+   "n": 50,
+   "rate": 0.58,
+   "ci": 0.13196003038827617,
+   "ideal": 0.76,
+   "ideal_ci": 0.11557848486660079,
+   "ideal_n": 50
+  },
+  {
+   "name": "Touch in the Wild DP, camera + tactile (SimpleCNN) \u00b7 FlexiTac YAM, nominal",
+   "n": 50,
+   "rate": 0.66,
+   "ci": 0.12704830911728043,
+   "ideal": 0.66,
+   "ideal_ci": 0.12704830911728043,
+   "ideal_n": 50
+  },
+  {
+   "name": "Touch in the Wild DP, camera + tactile (SimpleCNN) \u00b7 FlexiTac YAM, bump",
+   "n": 50,
+   "rate": 0.32,
+   "ci": 0.12526256521138338,
+   "ideal": 0.66,
+   "ideal_ci": 0.12704830911728043,
+   "ideal_n": 50
+  },
+  {
+   "name": "Touch in the Wild DP, camera + tactile (visuo-tactile MAE) \u00b7 FlexiTac YAM, nominal",
+   "n": 50,
+   "rate": 0.66,
+   "ci": 0.12704830911728043,
+   "ideal": 0.66,
+   "ideal_ci": 0.12704830911728043,
+   "ideal_n": 50
+  },
+  {
+   "name": "Touch in the Wild DP, camera + tactile (visuo-tactile MAE) \u00b7 FlexiTac YAM, bump",
+   "n": 50,
+   "rate": 0.58,
+   "ci": 0.13196003038827617,
+   "ideal": 0.66,
+   "ideal_ci": 0.12704830911728043,
+   "ideal_n": 50
+  },
+  {
+   "name": "DexScrew stage 1 teacher (privileged state; imitation of the scripted expert, not PPO) \u00b7 FlexiTac YAM, nominal",
+   "n": 50,
+   "rate": 1.0,
+   "ci": 0.035675017087159366,
+   "ideal": 1.0,
+   "ideal_ci": 0.035675017087159366,
+   "ideal_n": 50
+  },
+  {
+   "name": "DexScrew stage 1 teacher (privileged state; imitation of the scripted expert, not PPO) \u00b7 FlexiTac YAM, bump",
+   "n": 50,
+   "rate": 1.0,
+   "ci": 0.035675017087159366,
+   "ideal": 1.0,
+   "ideal_ci": 0.035675017087159366,
+   "ideal_n": 50
+  },
+  {
+   "name": "DexScrew stage 1 teacher (privileged state; imitation of the scripted expert, not PPO) \u00b7 FlexiTac YAM, shifted physics",
+   "n": 50,
+   "rate": 0.18,
+   "ci": 0.10513118361124409,
+   "ideal": 1.0,
+   "ideal_ci": 0.035675017087159366,
+   "ideal_n": 50
+  },
+  {
+   "name": "DexScrew stage 2 student (proprio + touch history) \u00b7 FlexiTac YAM, nominal",
+   "n": 50,
+   "rate": 0.8,
+   "ci": 0.10896871079255677,
+   "ideal": 0.8,
+   "ideal_ci": 0.10896871079255677,
+   "ideal_n": 50
+  },
+  {
+   "name": "DexScrew stage 2 student (proprio + touch history) \u00b7 FlexiTac YAM, bump",
+   "n": 50,
+   "rate": 0.0,
+   "ci": 0.035675017087159366,
+   "ideal": 0.8,
+   "ideal_ci": 0.10896871079255677,
+   "ideal_n": 50
+  },
+  {
+   "name": "DexScrew stage 2 student (proprio + touch history) \u00b7 FlexiTac YAM, shifted physics",
+   "n": 50,
+   "rate": 0.2,
+   "ci": 0.10896871079255678,
+   "ideal": 0.8,
+   "ideal_ci": 0.10896871079255677,
+   "ideal_n": 50
+  },
+  {
+   "name": "DexScrew stage 3 tactile BC fine-tune \u00b7 FlexiTac YAM, nominal",
+   "n": 50,
+   "rate": 0.5,
+   "ci": 0.13355713587667145,
+   "ideal": 0.5,
+   "ideal_ci": 0.13355713587667145,
+   "ideal_n": 50
+  },
+  {
+   "name": "DexScrew stage 3 tactile BC fine-tune \u00b7 FlexiTac YAM, bump",
+   "n": 50,
+   "rate": 0.0,
+   "ci": 0.035675017087159366,
+   "ideal": 0.5,
+   "ideal_ci": 0.13355713587667145,
+   "ideal_n": 50
+  },
+  {
+   "name": "DexScrew stage 3 tactile BC fine-tune \u00b7 FlexiTac YAM, shifted physics",
+   "n": 50,
+   "rate": 0.58,
+   "ci": 0.13196003038827617,
+   "ideal": 0.5,
+   "ideal_ci": 0.13355713587667145,
+   "ideal_n": 50
+  }
+ ],
+ "series": [
+  {
+   "name": "Dexterous hand",
+   "scaling": [
+    {
+     "n": 25,
+     "mean": 0.22,
+     "ci": 0.06572941071798327,
+     "seeds": [
+      0.25,
+      0.2,
+      0.21
+     ],
+     "N": 300,
+     "k": 66,
+     "steps": 175.16666666666666,
+     "xy_mm": 10.653066457602018
+    },
+    {
+     "n": 50,
+     "mean": 0.5833333333333334,
+     "ci": 0.08724709055957743,
+     "seeds": [
+      0.58,
+      0.62,
+      0.55
+     ],
+     "N": 300,
+     "k": 175,
+     "steps": 161.26285714285714,
+     "xy_mm": 7.046402816087514
+    },
+    {
+     "n": 100,
+     "mean": 0.8433333333333334,
+     "ci": 0.07589778594340615,
+     "seeds": [
+      0.85,
+      0.87,
+      0.81
+     ],
+     "N": 300,
+     "k": 253,
+     "steps": 161.5415019762846,
+     "xy_mm": 5.707652633836106
+    },
+    {
+     "n": 200,
+     "mean": 0.8566666666666666,
+     "ci": 0.03965864623912241,
+     "seeds": [
+      0.85,
+      0.86,
+      0.86
+     ],
+     "N": 300,
+     "k": 257,
+     "steps": 158.15175097276264,
+     "xy_mm": 4.544893303856563
+    }
+   ],
+   "expert_rate": 0.9216589861751152
+  },
+  {
+   "name": "YAM gripper",
+   "scaling": [
+    {
+     "n": 25,
+     "mean": 0.2833333333333333,
+     "ci": 0.07589778594340622,
+     "seeds": [
+      0.29,
+      0.31,
+      0.25
+     ],
+     "N": 300,
+     "k": 85,
+     "steps": 169.05882352941177,
+     "xy_mm": 10.043509657375516
+    },
+    {
+     "n": 50,
+     "mean": 0.8466666666666667,
+     "ci": 0.06252114051351845,
+     "seeds": [
+      0.82,
+      0.87,
+      0.85
+     ],
+     "N": 300,
+     "k": 254,
+     "steps": 163.9251968503937,
+     "xy_mm": 6.834553592572021
+    },
+    {
+     "n": 100,
+     "mean": 0.8833333333333333,
+     "ci": 0.3516311389478722,
+     "seeds": [
+      0.96,
+      0.72,
+      0.97
+     ],
+     "N": 300,
+     "k": 265,
+     "steps": 160.30943396226414,
+     "xy_mm": 3.0019802397914868
+    },
+    {
+     "n": 200,
+     "mean": 0.98,
+     "ci": 0.049686764166459244,
+     "seeds": [
+      0.96,
+      0.98,
+      1.0
+     ],
+     "N": 300,
+     "k": 294,
+     "steps": 159.93537414965985,
+     "xy_mm": 2.817030606451985
+    }
+   ],
+   "expert_rate": 1.0
+  }
+ ],
+ "scaling": [
+  {
+   "n": 25,
+   "mean": 0.22,
+   "ci": 0.06572941071798327,
+   "seeds": [
+    0.25,
+    0.2,
+    0.21
+   ],
+   "N": 300,
+   "k": 66,
+   "steps": 175.16666666666666,
+   "xy_mm": 10.653066457602018
+  },
+  {
+   "n": 50,
+   "mean": 0.5833333333333334,
+   "ci": 0.08724709055957743,
+   "seeds": [
+    0.58,
+    0.62,
+    0.55
+   ],
+   "N": 300,
+   "k": 175,
+   "steps": 161.26285714285714,
+   "xy_mm": 7.046402816087514
+  },
+  {
+   "n": 100,
+   "mean": 0.8433333333333334,
+   "ci": 0.07589778594340615,
+   "seeds": [
+    0.85,
+    0.87,
+    0.81
+   ],
+   "N": 300,
+   "k": 253,
+   "steps": 161.5415019762846,
+   "xy_mm": 5.707652633836106
+  },
+  {
+   "n": 200,
+   "mean": 0.8566666666666666,
+   "ci": 0.03965864623912241,
+   "seeds": [
+    0.85,
+    0.86,
+    0.86
+   ],
+   "N": 300,
+   "k": 257,
+   "steps": 158.15175097276264,
+   "xy_mm": 4.544893303856563
+  }
+ ],
+ "expert_rate": 0.9216589861751152,
+ "note": "Same task, observation, action, BC network and training recipe for both end effectors; only the hand differs (the dexterous hand uses a weld grasp assist, the YAM gripper a purely frictional grasp). Expert: success while collecting 200 demonstrations. BC: 3 training seeds x 100 held-out seeds (100000-100099); error bars are 95% intervals, the wider of the binomial interval and the spread across training seeds. Diffusion Policy and ACT rows: image-based policies (head + wrist RGB, joint angles), 1 training seed, 50 held-out episodes in the real-robot stand-in domain (shifted visuals and dynamics); error bars are the 95% Wilson interval. Touch in the Wild and DexScrew rows: FlexiTac tactile YAM gripper, 50 held-out seeds per condition; bump = the nut is pushed 3 cm along the pad face as the gripper first closes on it; shifted physics = heavier, slipperier nut, weaker arm gains and 2 control steps of latency. Ideal column: the same policy on the nominal simulator with nothing randomised or perturbed (default appearance and dynamics, no latency, no noise, no bump), 50 held-out seeds; for BC and the scripted experts, which were only ever evaluated that way, it repeats the Success column."
+}

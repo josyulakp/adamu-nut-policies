@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Offline rollouts and evaluation results for ADAM-U nut pick-and-place: scripted experts, BC, Diffusion Policy, ACT, DSRL, Touch in the Wild and DexScrew in MuJoCo.">
+<title>ADAM-U Nut Pick-and-Place</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column on phones (stage, transport, readouts, panels); stage left + side panel right from 900px. */
+:root {
+  --bg: #eef0f2; --panel: #ffffff; --ink: #1b2229; --muted: #5d6873; --line: #d5dae0;
+  --accent: #2f6fb0; --ok: #2f7d4f; --bad: #b43a2e; --stage: #dfe3e8; --bar: #2f6fb0; --bar2: #c0661e;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161a; --panel: #1a2026; --ink: #e4e8ec; --muted: #94a0ab; --line: #2b333b;
+  --accent: #6aa8e8; --ok: #5cc28a; --bad: #ef7a6c; --stage: #0d1013; --bar: #6aa8e8; --bar2: #f0a050; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161a; --panel: #1a2026; --ink: #e4e8ec; --muted: #94a0ab; --line: #2b333b;
+  --accent: #6aa8e8; --ok: #5cc28a; --bad: #ef7a6c; --stage: #0d1013; --bar: #6aa8e8; --bar2: #f0a050; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 14px 28px }
+header { display: grid; gap: 2px; margin-bottom: 12px }
+h1 { font-size: 1.25rem; font-weight: 600; margin: 0; text-wrap: balance }
+.sub { color: var(--muted); font-size: .9rem; max-width: 70ch }
+.app { display: grid; gap: 14px }
+@media (min-width: 900px) { .app { grid-template-columns: minmax(0, 1fr) 360px; align-items: start } }
+section, aside { min-width: 0 }
+.stage { position: relative; background: var(--stage); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  aspect-ratio: 4 / 3; max-width: 100%; touch-action: none }
+.stage canvas { display: block; width: 100%; height: 100% }
+.badge { position: absolute; left: 10px; top: 10px; font: 500 .72rem var(--font-mono); letter-spacing: .04em;
+  background: color-mix(in srgb, var(--panel) 85%, transparent); color: var(--muted); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line) }
+.status { position: absolute; right: 10px; top: 10px; font: 600 .75rem var(--font-ui); letter-spacing: .05em; text-transform: uppercase;
+  padding: 4px 9px; border-radius: 999px; color: #fff; background: var(--muted) }
+.status.ok { background: var(--ok) } .status.bad { background: var(--bad) }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font: .85rem var(--font-mono); text-align: center; padding: 16px }
+.transport { display: flex; align-items: center; gap: 10px; margin-top: 10px }
+button { font: 500 .9rem var(--font-ui); color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 12px; cursor: pointer; min-height: 40px }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; min-width: 72px }
+input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent) }
+.time { font: .8rem var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap }
+.readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-top: 10px }
+.cell { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0 }
+.cell .k { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted) }
+.cell .v { font: 500 1.05rem var(--font-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere }
+.cell .v.in { color: var(--ok) }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 10px; min-width: 0 }
+.panel h2, .block h2 { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 }
+.group { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-top: 6px }
+.list { display: grid; gap: 6px }
+.ep { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 10px; text-align: left; width: 100% }
+.ep .dot { width: 10px; height: 10px; border-radius: 50% }
+.ep .dot.ok { background: var(--ok) } .ep .dot.bad { background: var(--bad) }
+.ep .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.ep .meta { font: .72rem var(--font-mono); color: var(--muted) }
+.ep[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent) }
+.speeds { display: flex; gap: 6px; flex-wrap: wrap }
+.speeds button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent) }
+.note { font-size: .8rem; color: var(--muted) }
+.engine { display: grid; gap: 6px; font-size: .85rem; color: var(--muted) }
+.engine .msg { font: .75rem var(--font-mono); overflow-wrap: anywhere }
+.below { display: grid; gap: 14px; margin-top: 14px }
+@media (min-width: 900px) { .below { grid-template-columns: 1fr 1fr } }
+.block { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 10px; min-width: 0; align-content: start }
+dl.spec { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; margin: 0; font-size: .86rem }
+dl.spec dt { color: var(--muted) } dl.spec dd { margin: 0 }
+.tbl { overflow-x: auto }
+.tbl table { border-collapse: collapse; width: 100%; font-size: .84rem }
+.tbl td .ci { color: var(--muted, #888); font-size: .75rem }
+.tbl th, .tbl td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; min-width: 12em }
+.tbl td { font-family: var(--font-mono) } .tbl td:first-child { font-family: var(--font-ui) }
+svg.chart text { fill: var(--muted); font: 11px var(--font-mono) }
+.sense { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 8px }
+[hidden] { display: none !important }
+.sense .cell { display: flex; flex-direction: column; gap: 6px }
+.pads { display: flex; gap: 10px; align-items: flex-end }
+.pads figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: .7rem; color: var(--muted) }
+.pads canvas { width: 54px; height: 144px; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 3px; background: #000 }
+.sense video { width: 100%; max-width: 224px; aspect-ratio: 1; border-radius: 6px; border: 1px solid var(--line); background: #000 }
+.ramp { font-size: .7rem; color: var(--muted) }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto } }
+</style>
+
+</head>
+<body>
+<header>
+  <h1>ADAM-U nut pick-and-place</h1>
+  <div class="sub">ADAM-U's right arm picks a 22 mm hex nut off the table and sets it on the green pad. Two end effectors: the stock dexterous hand (scripted expert and a behaviour-cloned policy on held-out seeds) the YAM linear_4310 parallel-jaw gripper (scripted expert and a behaviour-cloned policy trained the same way), and the YAM gripper with FlexiTac tactile pads running Touch in the Wild and DexScrew policies (with the live pad readings). Drag to orbit, pinch to zoom.</div>
+  <div class="sub">Code: <a href="https://github.com/josyulakp/adamu-nut-policies">github.com/josyulakp/adamu-nut-policies</a> · models and raw rollouts: <a href="https://huggingface.co/josyula/adamu-nut-policies">huggingface.co/josyula/adamu-nut-policies</a> · <a href="https://josyulakp.github.io/adamu-nut-eval/">interactive evaluation page</a></div>
+</header>
+
+<div class="app">
+  <section>
+    <div class="stage" id="stage">
+      <canvas id="view" aria-label="3D replay of the selected episode"></canvas>
+      <div class="badge" id="badge">loading</div>
+      <div class="status" id="status">—</div>
+      <div class="loading" id="loading">loading scene…</div>
+    </div>
+    <div class="transport">
+      <button class="primary" id="play" aria-label="Play">Play</button>
+      <input type="range" id="scrub" min="0" max="0" value="0" step="1" aria-label="Episode time">
+      <span class="time" id="time">0.00 s</span>
+    </div>
+    <div class="readout">
+      <div class="cell"><div class="k">Nut to target</div><div class="v" id="xy">—</div></div>
+      <div class="cell"><div class="k">Nut height</div><div class="v" id="h">—</div></div>
+      <div class="cell"><div class="k">Grip</div><div class="v" id="grip">—</div></div>
+      <div class="cell"><div class="k" id="phasek">Phase</div><div class="v" id="phase">—</div></div>
+    </div>
+    <div class="sense" id="sense" hidden>
+      <div class="cell"><div class="k">FlexiTac pads · 32 × 12 taxels</div>
+        <div class="pads"><figure><canvas id="padL" width="12" height="32" aria-label="Left pad pressure"></canvas>left</figure>
+          <figure><canvas id="padR" width="12" height="32" aria-label="Right pad pressure"></canvas>right</figure></div>
+        <div class="ramp">tip at top · brighter = more pressure</div></div>
+      <div class="cell" id="camcell"><div class="k">Wrist camera (policy input)</div>
+        <video id="cam" muted playsinline preload="auto" aria-label="Wrist camera view seen by the policy"></video></div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <h2>Episodes</h2>
+    <div class="list" id="list"></div>
+    <h2>Speed</h2>
+    <div class="speeds" id="speeds"></div>
+    <h2>Engine</h2>
+    <div class="engine">
+      <div>Poses come from MuJoCo forward kinematics on the recorded joint state of each 50 ms control step. You can also run MuJoCo 3.17 in this browser (about 17 MB to load).</div>
+      <button id="wasm">Run MuJoCo in browser</button>
+      <div class="msg" id="engmsg">Using poses computed on the server.</div>
+    </div>
+  </aside>
+</div>
+
+<div class="below">
+  <div class="block">
+    <h2>Results</h2>
+    <div class="tbl"><table id="restable"></table></div>
+    <svg class="chart" id="chart" viewBox="0 0 340 196" role="img" aria-label="BC success rate against number of demonstrations, dexterous hand and YAM gripper"></svg>
+    <div class="note" id="resnote"></div>
+  </div>
+  <div class="block">
+    <h2>Task definition</h2>
+    <dl class="spec">
+      <dt>Robot</dt><dd>ADAM-U from pnd_mujoco, base fixed, right arm (7 joints) and hand. Waist, neck and left arm held still.</dd>
+      <dt>Start</dt><dd>Nut lying flat, x 0.26–0.38 m, y −0.34 to −0.18 m, yaw uniform over one 60° hex period.</dd>
+      <dt>Goal</dt><dd>Green pad, x 0.26–0.36 m, y −0.08 to 0.02 m, randomised per episode.</dd>
+      <dt>Observation</dt><dd>26 values: arm joint angles and velocities, grip command, pinch point, nut position, sin/cos of 6×yaw, target position.</dd>
+      <dt>Action</dt><dd>8 values at 20 Hz: 7 arm joint position targets plus a grip command from 0 to 1 that drives a thumb–index–middle synergy.</dd>
+      <dt>Success</dt><dd>Nut centre within 20 mm of the pad centre, flat on the table (tilt under 15°), not touching the hand, held for 0.5 s.</dd>
+      <dt>Episode</dt><dd>At most 300 steps (15 s).</dd>
+      <dt>Simplified hand</dt><dd>Fingers close with real contacts. Once the thumb and index or middle finger both touch the nut with the grip past 0.45, the nut is welded to the hand; it is released when the grip drops below 0.35.</dd>
+      <dt>FlexiTac tactile variant</dt><dd>YAM fingertips replaced by flat 24 × 64 mm FlexiTac pads with 32 × 12 taxels at 2 mm pitch. Each taxel reads the penetration of a virtual 0.5 mm elastomer into the nut (stiffness 5000 N/m, saturating at 10 N), the same model as the FlexiTac Isaac Sim sensor.</dd>
+      <dt>YAM gripper variant</dt><dd>The right hand is replaced by the YAM linear_4310 parallel-jaw gripper from MuJoCo Menagerie, on a 35 mm adapter at the wrist-roll joint. The grip command maps to finger travel (95 mm open to 5 mm past closed, 50 N pads). The grasp is purely frictional, with no weld.</dd>
+      <dt>Co-training (YAM)</dt><dd>Image-based Diffusion Policy (head and wrist RGB plus joint angles, no nut pose) trained on randomised simulation demos mixed with a few demos from a "real robot" stand-in: a second simulation with an unseen look, 150 ms latency, softer servos, imperfect gravity compensation and lower pad friction. Replace the stand-in with recorded robot data to run it for real.</dd>
+    </dl>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const $ = (id) => document.getElementById(id);
+const canvas = $("view"), stage = $("stage");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 4 / 3, 0.01, 30);
+camera.up.set(0, 0, 1);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f96, 1.7));
+const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(1.5, -1.2, 3); scene.add(sun);
+
+const css = (v, d) => getComputedStyle(document.documentElement).getPropertyValue(v).trim() || d;
+function applyBackground() { scene.background = new THREE.Color(css("--stage", "#dfe3e8")); }
+applyBackground();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { applyBackground(); drawChart(); });
+new MutationObserver(() => { applyBackground(); drawChart(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage);
+
+const fetchJSON = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
+function decodeBase64(text) { const bin = atob(text.trim()), out = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out.buffer; }
+const fetchB64 = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u + " " + r.status); return r.text(); }).then(decodeBase64);
+
+let catalogue;
+try { catalogue = await fetchJSON("episodes.json"); }
+catch (err) { $("loading").textContent = "Could not load the episode list (" + err.message + "). Reload the page to try again."; throw err; }
+for (const e of catalogue) e.variant = e.variant || "hand";
+const SUFFIX = { hand: "", yam: "_yam", tac: "_tac" };
+const variants = new Map();   // variant -> { sceneInfo, world, bodies }
+let sceneInfo, bodies = [], activeVariant = null, meshIndex, meshBuf;
+
+function meshGeometry(i) {
+  const r = meshIndex[i], g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(meshBuf, r.v, r.nv * 3), 3));
+  g.setIndex(new THREE.BufferAttribute(new Uint32Array(meshBuf, r.f, r.nf * 3), 1));
+  const flat = g.toNonIndexed(); flat.computeVertexNormals(); return flat;
+}
+function primitive(t, s) {
+  if (t === "box") return new THREE.BoxGeometry(2 * s[0], 2 * s[1], 2 * s[2]);
+  if (t === "sphere") return new THREE.SphereGeometry(s[0], 24, 16);
+  if (t === "cylinder") return new THREE.CylinderGeometry(s[0], s[0], 2 * s[1], 40).rotateX(Math.PI / 2);
+  if (t === "capsule") return new THREE.CapsuleGeometry(s[0], 2 * s[1], 8, 16).rotateX(Math.PI / 2);
+  if (t === "plane") return new THREE.PlaneGeometry(6, 6);
+  return null;
+}
+async function loadVariant(v) {
+  if (variants.has(v)) return variants.get(v);
+  const sfx = SUFFIX[v];
+  const [info, idx, buf] = await Promise.all([fetchJSON(`scene${sfx}.json`), fetchJSON(`meshes${sfx}.json`), fetchB64(`meshes${sfx}.b64.txt`)]);
+  meshIndex = idx; meshBuf = buf;
+  const vb = [], world = new THREE.Group();
+  for (let b = 0; b < info.nbody; b++) { const g = new THREE.Group(); vb.push(g); world.add(g); }
+  for (const geom of info.geoms) {
+  const geo = geom.t === "mesh" ? meshGeometry(geom.m) : primitive(geom.t, geom.s);
+  if (!geo) continue;
+  const [r, g, b, a] = geom.c;
+  const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(r, g, b), roughness: geom.n === "nut_visual" ? 0.3 : 0.6,
+    metalness: geom.n === "nut_visual" ? 0.6 : 0.1, transparent: a < 0.99, opacity: a, side: geom.t === "plane" ? THREE.DoubleSide : THREE.FrontSide });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(...geom.p); mesh.quaternion.set(geom.q[1], geom.q[2], geom.q[3], geom.q[0]);
+  vb[geom.b].add(mesh);
+  }
+  const rec = { sceneInfo: info, world, bodies: vb };
+  variants.set(v, rec); return rec;
+}
+async function useVariant(v) {
+  if (v === activeVariant) return;
+  const rec = await loadVariant(v);
+  for (const [k, r] of variants) { if (k !== v && r.world.parent) scene.remove(r.world); }
+  scene.add(rec.world); sceneInfo = rec.sceneInfo; bodies = rec.bodies;
+  if (activeVariant === null) {
+    controls.target.set(...sceneInfo.look);
+    camera.position.set(sceneInfo.look[0] + 0.75, sceneInfo.look[1] - 0.55, sceneInfo.look[2] + 0.45);
+    controls.update();
+  }
+  activeVariant = v;
+}
+
+let current = null, poses = null;
+function applyPose(frame) {
+  if (engine.live) {
+    const d = engine.data; d.qpos.set(current.qpos[frame]); engine.mj.mj_kinematics(engine.model, d);
+    const xp = d.xpos, xq = d.xquat;
+    for (let b = 0; b < bodies.length; b++) {
+      bodies[b].position.set(xp[3 * b], xp[3 * b + 1], xp[3 * b + 2]);
+      bodies[b].quaternion.set(xq[4 * b + 1], xq[4 * b + 2], xq[4 * b + 3], xq[4 * b]);
+    }
+    for (const [b, p] of Object.entries(current.fixed_bodies || {})) { bodies[b].position.set(p[0], p[1], p[2]); bodies[b].quaternion.set(p[4], p[5], p[6], p[3]); }
+    return;
+  }
+  const n = bodies.length, base = frame * n * 7;
+  for (let b = 0; b < n; b++) {
+    const o = base + b * 7;
+    bodies[b].position.set(poses[o], poses[o + 1], poses[o + 2]);
+    bodies[b].quaternion.set(poses[o + 4], poses[o + 5], poses[o + 6], poses[o + 3]);
+  }
+}
+
+function showFrame(frame) {
+  applyPose(frame);
+  const xy = current.xy_mm[frame], h = current.h_mm[frame];
+  $("xy").textContent = xy.toFixed(1) + " mm"; $("xy").classList.toggle("in", xy < 20);
+  $("h").textContent = (h >= 0 ? "+" : "") + h.toFixed(1) + " mm";
+  $("grip").textContent = current.grip[frame].toFixed(2) + (current.grasped[frame] ? " · held" : "");
+  $("phase").textContent = current.phase[frame];
+  if (current.tactBytes) {
+    const n = 32 * 12, base = frame * 2 * n;
+    for (const [k, id] of [[0, "padL"], [1, "padR"]]) {
+      const ctx = $(id).getContext("2d"), img = ctx.createImageData(12, 32);
+      for (let i = 0; i < n; i++) {
+        const v = current.tactBytes[base + k * n + i] / 255, o = 4 * i;   // black -> orange -> pale yellow
+        img.data[o] = Math.round(255 * Math.min(1, v * 1.6)); img.data[o + 1] = Math.round(255 * Math.max(0, Math.min(1, v * 1.4 - 0.25)));
+        img.data[o + 2] = Math.round(255 * Math.max(0, v - 0.6) * 2); img.data[o + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+  }
+  const cam = $("cam");
+  if (current.video && cam.readyState >= 1 && (!playing || Math.abs(cam.currentTime - frame * current.dt) > 0.25))
+    cam.currentTime = Math.min(frame * current.dt, cam.duration || 0);
+  $("time").textContent = (frame * current.dt).toFixed(2) + " s";
+  $("scrub").value = frame;
+}
+
+let frame = 0, playing = false, speed = 1, last = 0, acc = 0;
+async function select(ep) {
+  playing = false; $("play").textContent = "Play";
+  $("loading").hidden = false; $("loading").textContent = "loading episode…";
+  for (const el of $("list").querySelectorAll(".ep")) el.setAttribute("aria-pressed", String(el.dataset.id === ep.id));
+  try {
+    await useVariant(ep.variant);
+    if (engine.live && engine.variant !== ep.variant) await engine.load(ep.variant, ep);
+    if (!ep.qpos) Object.assign(ep, await fetchJSON(`episodes/${ep.id}.json`));
+    if (!ep.poses) ep.poses = new Float32Array(await fetchB64(`episodes/${ep.id}.b64.txt`));
+  } catch (err) { $("loading").textContent = "Could not load this episode (" + err.message + "). Pick it again to retry."; return; }
+  if (ep.tact && !ep.tactBytes) ep.tactBytes = new Uint8Array(decodeBase64(ep.tact));
+  current = ep; poses = ep.poses;
+  $("sense").hidden = !ep.tactBytes;
+  $("phasek").textContent = ep.tactBytes ? "Pad contact" : "Phase";
+  $("camcell").hidden = !ep.video;
+  const cam = $("cam"); cam.pause();
+  if (ep.video) { if (cam.getAttribute("src") !== ep.video) cam.src = ep.video; } else cam.removeAttribute("src");
+  $("loading").hidden = true;
+  $("scrub").max = ep.frames - 1;
+  const st = $("status"); st.className = "status " + (ep.success ? "ok" : "bad");
+  st.textContent = ep.success ? "Placed" : "Failed";
+  frame = 0; showFrame(0);
+  try { localStorage.setItem("adamu-nut-ep", ep.id); } catch (e) {}
+}
+
+const GROUP = { expert: "Dexterous hand · scripted expert", bc: "Dexterous hand · BC policy, held-out seeds", yam: "YAM gripper · scripted expert", yam_bc: "YAM gripper · BC policy, held-out seeds", yam_dp_sim: "YAM · image Diffusion Policy, sim-only, real stand-in", yam_dp_co: "YAM · image Diffusion Policy, sim + real co-trained, real stand-in", yam_act_co: "YAM · ACT, sim + real co-trained, real stand-in", yam_dsrl_co: "YAM · DSRL-steered Diffusion Policy (co-trained base), real stand-in", tw_vision: "FlexiTac YAM · Touch in the Wild DP, camera only", tw_cnn: "FlexiTac YAM · Touch in the Wild DP, camera + touch (SimpleCNN)", tw_mae: "FlexiTac YAM · Touch in the Wild DP, camera + touch (visuo-tactile MAE)", ds_teacher: "FlexiTac YAM · DexScrew teacher (privileged state)", ds_student: "FlexiTac YAM · DexScrew student (proprio + touch history)", ds_ft: "FlexiTac YAM · DexScrew + tactile BC fine-tune" };
+const CONDN = { nominal: "nominal", bump: "bump", shifted: "shifted physics" };
+let lastGroup = null;
+for (const ep of catalogue) {
+  if (ep.kind !== lastGroup) { const h = document.createElement("div"); h.className = "group"; h.textContent = GROUP[ep.kind]; $("list").appendChild(h); lastGroup = ep.kind; }
+  const b = document.createElement("button"); b.className = "ep"; b.dataset.id = ep.id; b.setAttribute("aria-pressed", "false");
+  b.innerHTML = `<span class="dot ${ep.success ? "ok" : "bad"}"></span><span class="name"></span><span class="meta"></span>`;
+  b.querySelector(".name").textContent = `Seed ${ep.seed}` + (ep.cond ? ` · ${CONDN[ep.cond]}` : "");
+  b.querySelector(".meta").textContent = `${(ep.frames * ep.dt).toFixed(1)} s · ${(ep.xy_err * 1000).toFixed(0)} mm`;
+  b.addEventListener("click", () => select(ep));
+  $("list").appendChild(b);
+}
+for (const s of [0.5, 1, 2, 4]) {
+  const b = document.createElement("button"); b.textContent = s + "×"; b.setAttribute("aria-pressed", String(s === speed));
+  b.addEventListener("click", () => { speed = s; $("cam").playbackRate = s; for (const x of $("speeds").children) x.setAttribute("aria-pressed", String(x === b)); });
+  $("speeds").appendChild(b);
+}
+$("play").addEventListener("click", () => {
+  if (!current) return;
+  if (frame >= current.frames - 1) frame = 0;
+  playing = !playing; $("play").textContent = playing ? "Pause" : "Play"; last = performance.now(); acc = 0;
+  const cam = $("cam");
+  if (current.video) { cam.playbackRate = speed; cam.currentTime = frame * current.dt; if (playing) cam.play().catch(() => {}); else cam.pause(); }
+});
+$("scrub").addEventListener("input", (e) => { if (!current) return; frame = Number(e.target.value); showFrame(frame); });
+
+// ---- results -------------------------------------------------------------------------------------
+const RESULTS = await fetchJSON("results.json").catch(() => null);
+function drawChart() {
+  const svg = $("chart");
+  const series = RESULTS && (RESULTS.series || (RESULTS.scaling ? [{ name: "BC", scaling: RESULTS.scaling, expert_rate: RESULTS.expert_rate }] : null));
+  if (!series) { svg.hidden = true; return; }
+  const W = 340, H = 196, L = 40, R = 12, T = 26, B = 34;
+  const xs = series.flatMap((sr) => sr.scaling.map((p) => Math.log2(p.n))), x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const X = (n) => L + (Math.log2(n) - x0) / (x1 - x0 || 1) * (W - L - R), Y = (v) => T + (1 - v) * (H - T - B);
+  const line = css("--line", "#ccc"), cols = [css("--bar", "#36c"), css("--bar2", "#c62")];
+  let s = "";
+  for (const v of [0, 0.25, 0.5, 0.75, 1]) s += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${line}" stroke-width="1"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${Math.round(v * 100)}%</text>`;
+  for (const p of series[0].scaling) s += `<text x="${X(p.n)}" y="${H - B + 16}" text-anchor="middle">${p.n}</text>`;
+  s += `<text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle">demonstrations</text>`;
+  series.forEach((sr, k) => {
+    const c = cols[k % cols.length], dx = (k - (series.length - 1) / 2) * 5;
+    if (sr.expert_rate != null) s += `<line x1="${L}" x2="${W - R}" y1="${Y(sr.expert_rate)}" y2="${Y(sr.expert_rate)}" stroke="${c}" stroke-dasharray="4 3" stroke-width="1" opacity="0.7"/>`;
+    s += `<polyline fill="none" stroke="${c}" stroke-width="2" points="${sr.scaling.map((p) => `${X(p.n) + dx},${Y(p.mean)}`).join(" ")}"/>`;
+    for (const p of sr.scaling) {
+      s += `<line x1="${X(p.n) + dx}" x2="${X(p.n) + dx}" y1="${Y(Math.min(1, p.mean + p.ci))}" y2="${Y(Math.max(0, p.mean - p.ci))}" stroke="${c}" stroke-width="1.5"/>`;
+      s += `<circle cx="${X(p.n) + dx}" cy="${Y(p.mean)}" r="3.5" fill="${c}"/>`;
+    }
+    const lx = L + 4 + k * 150;
+    s += `<line x1="${lx}" x2="${lx + 16}" y1="9" y2="9" stroke="${c}" stroke-width="2"/><text x="${lx + 21}" y="13" style="fill:${c}">${sr.name}</text>`;
+  });
+  s += `<text x="${W - R}" y="13" text-anchor="end">dashed: expert</text>`;
+  svg.innerHTML = s; svg.hidden = false;
+}
+if (RESULTS) {
+  $("restable").innerHTML = `<thead><tr><th>Policy</th><th>Episodes</th><th>Success</th><th>±95% CI</th><th>Ideal</th></tr></thead><tbody>` +
+    RESULTS.rows.map((r) => `<tr><td>${r.name}</td><td>${r.n}</td><td>${(r.rate * 100).toFixed(1)}%</td><td>${(r.ci * 100).toFixed(1)}</td>` +
+      `<td>${r.ideal == null ? "–" : `${(r.ideal * 100).toFixed(0)}% <span class="ci">±${(r.ideal_ci * 100).toFixed(0)}</span>`}</td></tr>`).join("") + `</tbody>`;
+  $("resnote").textContent = RESULTS.note || "";
+  drawChart();
+} else { $("restable").hidden = true; $("chart").hidden = true; $("resnote").textContent = "Results are not available."; }
+
+// ---- MuJoCo WASM -------------------------------------------------------------------------------
+const engine = {
+  live: false, mj: null, model: null, data: null, variant: null,
+  async load(variant, ep) {
+    if (!this.mj) {
+      $("engmsg").textContent = "Loading MuJoCo 3.17 WebAssembly…";
+      const [{ default: loadMujoco }, wasm] = await Promise.all([
+        import("https://cdn.jsdelivr.net/npm/@mujoco/mujoco@3.17.0/mujoco.js"), fetch("mujoco/mujoco.wasm").then((r) => { if (!r.ok) throw new Error("mujoco.wasm " + r.status); return r.arrayBuffer(); })]);
+      this.mj = await loadMujoco({ wasmBinary: wasm });
+      this.mj.FS.mkdir("/w"); this.mj.FS.mkdir("/w/meshes");
+    }
+    this.live = false;
+    const xml = await fetch(`mujoco/scene${SUFFIX[variant]}.xml`).then((r) => r.text());
+    const files = [...new Set([...xml.matchAll(/file="([^"]+)"/g)].map((m) => m[1]))];
+    let done = 0;
+    await Promise.all(files.map(async (f) => {
+      try { this.mj.FS.stat("/w/meshes/" + f); return; } catch (e) {}
+      this.mj.FS.writeFile("/w/meshes/" + f, new Uint8Array(await fetchB64(`mujoco/meshes/${f}.b64.txt`)));
+      $("engmsg").textContent = `Loading meshes ${++done}/${files.length}…`;
+    }));
+    this.mj.FS.writeFile("/w/scene.xml", xml);
+    if (this.data) this.data.delete(); if (this.model) this.model.delete();
+    this.model = this.mj.MjModel.mj_loadXML("/w/scene.xml");
+    this.data = new this.mj.MjData(this.model);
+    this.variant = variant;
+    const cur = ep || current;
+    if (!cur.qpos) Object.assign(cur, await fetchJSON(`episodes/${cur.id}.json`));
+    if (!cur.poses) cur.poses = new Float32Array(await fetchB64(`episodes/${cur.id}.b64.txt`));
+    const P = cur.poses;
+    let err = 0;
+    for (let f = 0; f < cur.frames; f += Math.max(1, Math.floor(current.frames / 12))) {
+      this.data.qpos.set(cur.qpos[f]); this.mj.mj_kinematics(this.model, this.data);
+      for (let b = 1; b < this.model.nbody; b++) if (!(cur.fixed_bodies || {})[b]) for (let k = 0; k < 3; k++)
+        err = Math.max(err, Math.abs(this.data.xpos[3 * b + k] - P[(f * this.model.nbody + b) * 7 + k]));
+    }
+    this.live = true;
+    $("engmsg").textContent = `MuJoCo 3.17 is running in this browser (${this.model.nbody} bodies, ${this.model.ngeom} geoms, nq ${this.model.nq}). Its poses match the server's to ${err.toExponential(1)} m.`;
+    $("badge").textContent = "MuJoCo 3.17 · WebAssembly · live";
+  },
+};
+$("wasm").addEventListener("click", async () => {
+  $("wasm").disabled = true;
+  try { await engine.load(current.variant, current); showFrame(frame); $("wasm").textContent = "MuJoCo running in browser"; }
+  catch (err) {
+    engine.live = false; $("wasm").disabled = false;
+    $("engmsg").textContent = "The WebAssembly engine did not start (" + (err.message || err) + "). The replay keeps using the server poses.";
+  }
+});
+
+let first = catalogue[0];
+try { const saved = localStorage.getItem("adamu-nut-ep"); first = catalogue.find((e) => e.id === saved) || first; } catch (e) {}
+$("badge").textContent = "MuJoCo poses · server";
+resize();
+await select(first);
+
+function loop(now) {
+  if (playing && current) {
+    acc += (now - last) / 1000 * speed; last = now;
+    const step = Math.floor(acc / current.dt);
+    if (step > 0) {
+      acc -= step * current.dt; frame = Math.min(frame + step, current.frames - 1); showFrame(frame);
+      if (frame >= current.frames - 1) { playing = false; $("play").textContent = "Replay"; $("cam").pause(); }
+    }
+  } else last = now;
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

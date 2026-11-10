@@ -103,7 +103,8 @@ class VecEnv:
 # --------------------------------------------------------------------------------------- base policy
 def resolve(p):
     """A checkpoint path as given, or relative to this directory, or to the repository root (release models)."""
-    for c in (Path(p), Path(__file__).resolve().parent / p, Path(__file__).resolve().parents[2] / p):
+    root = Path(__file__).resolve().parents[2]
+    for c in (Path(p), Path(__file__).resolve().parent / p, Path(os.environ.get("ADAMU_DATA", root)) / p, root / p):
         if c.exists():
             return str(c)
     return str(p)
@@ -130,6 +131,8 @@ class Base:
     def sample(self, cond, w):
         """cond (B, SDIM), w (B, WDIM) -> normalised chunk (B, TP, ADIM) in [-1, 1]. CUDA-graphed per batch size."""
         B = cond.shape[0]
+        if self.dev == "cpu" or not torch.cuda.is_available():
+            return self._sample(cond, w)
         if B not in self.graphs:
             sc, sw = cond.detach().clone(), w.detach().clone()
             st = torch.cuda.Stream(); st.wait_stream(torch.cuda.current_stream())
@@ -149,13 +152,13 @@ class Base:
     def encode(self, obs):
         img = torch.from_numpy(np.stack([o[0] for o in obs])).to(self.dev)
         prop = torch.from_numpy(np.stack([o[1] for o in obs])).to(self.dev)
-        with torch.autocast("cuda", dtype=torch.bfloat16):
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=self.dev != "cpu"):
             return self.pol.encode(augment(img, None, train=False), prop).float()
 
     @torch.no_grad()
     def _sample(self, cond, w):
         x = w.view(-1, TP, ADIM).float()
-        with torch.autocast("cuda", dtype=torch.bfloat16):
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=self.dev != "cpu"):
             for t, ab, ab_prev in zip(self.tvec, self.abs, self.abs_prev):
                 eps = self.pol.unet(x, t.expand(x.shape[0]), cond).float()
                 x0 = ((x - (1 - ab).sqrt() * eps) / ab.sqrt()).clamp(-1, 1)

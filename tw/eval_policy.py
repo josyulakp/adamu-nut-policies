@@ -53,7 +53,7 @@ def load(ckpt):
         ws.load_payload(payload, exclude_keys=None, include_keys=None)
         pol = ws.ema_model if cfg.training.use_ema else ws.model
     pol.num_inference_steps = 16
-    return pol.eval().cuda(), cfg
+    return pol.eval().to("cuda" if torch.cuda.is_available() else "cpu"), cfg
 
 
 def run(pol, cfg, env, seed, cond, n_act=8, record=False, max_steps=320):
@@ -67,7 +67,7 @@ def run(pol, cfg, env, seed, cond, n_act=8, record=False, max_steps=320):
         with torch.no_grad():
             od = get_real_umi_obs_dict(env_obs=obs, shape_meta=cfg.task.shape_meta, obs_pose_repr=cfg.task.pose_repr.obs_pose_repr,
                                        tx_robot1_robot0=None, episode_start_pose=start)
-            od = dict_apply(od, lambda x: torch.from_numpy(np.asarray(x, np.float32)).unsqueeze(0).cuda())
+            od = dict_apply(od, lambda x: torch.from_numpy(np.asarray(x, np.float32)).unsqueeze(0).to(pol.device))
             raw = pol.predict_action(od)["action_pred"][0].float().cpu().numpy()
         act = get_real_umi_action(raw, obs, cfg.task.pose_repr.action_pose_repr)
         for a in act[:n_act]:

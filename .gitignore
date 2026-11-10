@@ -12,3 +12,5 @@ outputs/
 __pycache__/
 *.pyc
 MUJOCO_LOG.TXT
+space_build/
+pages_build/

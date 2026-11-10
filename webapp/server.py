@@ -13,6 +13,7 @@ API
   GET  /api/job?id=..&from=k          {state, queue, status, start, frames[k:], end}
 """
 import argparse
+import os
 import base64
 import json
 import subprocess
@@ -30,10 +31,12 @@ import registry as R  # noqa: E402
 
 LAUNCH = {
     "cam": f"source '{REPO}/adamu_nut_yam/cotrain/env.sh' && exec python '{HERE}/worker.py' cam",
-    "tac": (f"source '{REPO}/.venv-tw/bin/activate' && export MUJOCO_GL=egl PYTHONPATH='{REPO}/ext/touch_in_the_wild' && "
+    "tac": (f"source '{REPO}/.venv-tw/bin/activate' && export MUJOCO_GL=${{MUJOCO_GL:-egl}} PYTHONPATH='{REPO}/ext/touch_in_the_wild' && "
             f"exec python '{HERE}/worker.py' tac"),
 }
 JOBS, LOCK = {}, threading.Lock()
+ALLOW_ORIGIN = os.environ.get("ALLOW_ORIGIN", "*")     # who may call the API from a browser (the GitHub Pages site)
+MAX_QUEUE = int(os.environ.get("MAX_QUEUE", 8))        # episodes waiting per worker before new requests are refused
 
 
 class Worker:
@@ -102,7 +105,7 @@ def ideal_rates():
     out = {}
     for mid, s in R.MODELS.items():
         cond = "ideal" if s["worker"] == "cam" else "nominal"
-        f = REPO / "results" / f"{s['res']}_{cond}.json"
+        f = R.DATA / "results" / f"{s['res']}_{cond}.json"
         if f.exists():
             d = json.loads(f.read_text()); e = d["episodes"] if isinstance(d, dict) else d
             out[mid] = [sum(bool(x["success"]) for x in e), len(e)]
@@ -120,9 +123,17 @@ def make_handler(workers, preview):
 
         def send_json(self, obj, code=200):
             b = json.dumps(obj, separators=(",", ":")).encode()
-            self.send_response(code); self.send_header("Content-Type", "application/json")
+            self.send_response(code); self.send_header("Content-Type", "application/json"); self.cors()
             self.send_header("Content-Length", str(len(b))); self.send_header("Cache-Control", "no-store")
             self.end_headers(); self.wfile.write(b)
+
+        def cors(self):
+            self.send_header("Access-Control-Allow-Origin", ALLOW_ORIGIN)
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+
+        def do_OPTIONS(self):
+            self.send_response(204); self.cors(); self.send_header("Content-Length", "0"); self.end_headers()
 
         def body(self):
             n = int(self.headers.get("Content-Length", 0))
@@ -169,6 +180,8 @@ def make_handler(workers, preview):
                 cond = req.get("cond") or spec["conds"][0][0]
                 if cond not in [c for c, _ in spec["conds"]]:
                     return self.send_json({"error": f"{spec['id']} does not support condition {cond}"}, 400)
+                if len(workers[spec["worker"]].queue) >= MAX_QUEUE:
+                    return self.send_json({"error": "busy: too many episodes queued, try again in a minute"}, 429)
                 jid = uuid.uuid4().hex[:12]
                 with LOCK:
                     JOBS[jid] = dict(id=jid, worker=spec["worker"], state="queued", frames=[], model=spec["id"])
@@ -183,7 +196,8 @@ def make_handler(workers, preview):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--port", type=int, default=8770); ap.add_argument("--host", default="127.0.0.1")
+    ap.add_argument("--port", type=int, default=int(os.environ.get("PORT", 8770)))
+    ap.add_argument("--host", default=os.environ.get("HOST", "127.0.0.1"))
     a = ap.parse_args()
     if not (HERE / "static" / "scene_tac.json").exists():
         subprocess.run([sys.executable, str(HERE / "build_assets.py")], check=True)

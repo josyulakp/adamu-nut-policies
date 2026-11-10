@@ -36,6 +36,12 @@ from PIL import Image  # noqa: E402
 from registry import MODELS  # noqa: E402
 
 FAMILY = sys.argv[1]
+MAX_MODELS = int(os.environ.get("MAX_MODELS", 8))      # models kept loaded per worker (oldest is dropped first)
+
+
+def evict(pols):
+    while len(pols) >= MAX_MODELS:
+        pols.pop(next(iter(pols)))
 TABLE_TOP, NUT_REST = 0.98, 0.98 + 0.008
 
 
@@ -72,12 +78,15 @@ if FAMILY == "cam":
     from act import ACT, CHUNK
     from cam_env import CamEnv
     from dp import TA, TO, DiffusionPolicy, augment
-    DEV = "cuda"
+    DEV = "cuda" if torch.cuda.is_available() else "cpu"
+    if DEV == "cpu":
+        torch.set_num_threads(int(os.environ.get("TORCH_THREADS", 2)))
     POSE = Poser(REPO / "adamu_nut_yam" / "assets" / "scene.xml")
     ENVS, POLS = {}, {}
 
     def policy(spec):
         if spec["id"] not in POLS:
+            evict(POLS)
             if spec["kind"] == "dsrl":
                 from dsrl import Actor, Base
                 ag = torch.load(Path(spec["path"]) / "agent.pt", map_location=DEV)
@@ -113,7 +122,7 @@ if FAMILY == "cam":
             if is_act:       # temporal ensembling, as in act.py
                 img = torch.from_numpy(o["images"])[None, None].to(DEV)
                 prop = torch.from_numpy(o["proprio"])[None].to(DEV)
-                with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
+                with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16, enabled=DEV == "cuda"):
                     chunk = pol.act(augment(img, None, train=False)[:, 0], prop)[0].float().cpu().numpy()
                 buf.append((t, chunk)); buf = [(t0, c) for t0, c in buf if t - t0 < CHUNK]
                 preds = np.array([c[t - t0] for t0, c in buf]); w = np.exp(-0.01 * np.arange(len(preds)))
@@ -127,7 +136,7 @@ if FAMILY == "cam":
             elif not plan:
                 img = torch.from_numpy(np.stack([h["images"] for h in hist[-TO:]]))[None].to(DEV)
                 prop = torch.from_numpy(np.stack([h["proprio"] for h in hist[-TO:]]))[None].to(DEV)
-                with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
+                with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16, enabled=DEV == "cuda"):
                     plan = list(pol.act(augment(img, None, train=False), prop, gen)[0].float().cpu().numpy()[:TA])
             a = plan.pop(0)
             o, done, info = env.step(a); hist.append(o); t += 1
@@ -139,6 +148,8 @@ if FAMILY == "cam":
 # ============================================================================================ tac: TW / DexScrew
 else:
     import torch
+    if not torch.cuda.is_available():
+        torch.set_num_threads(int(os.environ.get("TORCH_THREADS", 2)))
     sys.path.insert(0, str(REPO / "tw")); sys.path.insert(0, str(REPO / "ds"))
     sys.path.insert(0, str(REPO / "ext" / "touch_in_the_wild")); sys.path.insert(0, str(REPO / "ext" / "dexscrew"))
     POSE = Poser(REPO / "adamu_nut_tactile" / "assets" / "scene.xml")
@@ -148,7 +159,7 @@ else:
         import eval_policy as ep
         from sim import TactileSim
         if spec["id"] not in POLS:
-            POLS[spec["id"]] = ep.load(spec["path"])
+            evict(POLS); POLS[spec["id"]] = ep.load(spec["path"])
         pol, cfg = POLS[spec["id"]]
         if "tw" not in ENVS:
             ENVS["tw"] = TactileSim()
@@ -174,7 +185,7 @@ else:
                 od = ep.get_real_umi_obs_dict(env_obs=obs, shape_meta=cfg.task.shape_meta,
                                               obs_pose_repr=cfg.task.pose_repr.obs_pose_repr, tx_robot1_robot0=None,
                                               episode_start_pose=start)
-                od = ep.dict_apply(od, lambda x: torch.from_numpy(np.asarray(x, np.float32)).unsqueeze(0).cuda())
+                od = ep.dict_apply(od, lambda x: torch.from_numpy(np.asarray(x, np.float32)).unsqueeze(0).to(pol.device))
                 raw = pol.predict_action(od)["action_pred"][0].float().cpu().numpy()
             act = ep.get_real_umi_action(raw, obs, cfg.task.pose_repr.action_pose_repr)
             done = False
@@ -200,7 +211,7 @@ else:
         from eval_ds import build_policy
         from nut_rl_env import SHIFTED, NutRLEnv
         if spec["id"] not in POLS:
-            POLS[spec["id"]] = build_policy(spec["path"], spec["kind"][3:])
+            evict(POLS); POLS[spec["id"]] = build_policy(spec["path"], spec["kind"][3:])
         act = POLS[spec["id"]]
         key = "ds_shifted" if cond == "shifted" else "ds"
         if key not in ENVS:

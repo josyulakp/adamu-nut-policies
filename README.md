@@ -297,8 +297,27 @@ How it works:
 * `build_assets.py` exports the two scenes as browser geometry (run automatically on first start).
 
 An episode takes 2 to 15 s of compute: DexScrew ~2 s, DP / ACT / DSRL 3 to 10 s, Touch in the Wild ~10 to 15 s.
-The first run of each model adds a few seconds to load it. To share it beyond an SSH tunnel, put it behind an
-authenticating reverse proxy: the API runs arbitrary layouts on your GPU.
+The first run of each model adds a few seconds to load it. The workers fall back to the CPU when there is no GPU
+(set `MUJOCO_GL=osmesa` for software rendering).
+
+### Public hosting: Hugging Face Space + GitHub Pages
+
+| Piece | Where | Made by |
+|---|---|---|
+| Models and results | [`josyula/adamu-nut-policies`](https://huggingface.co/josyula/adamu-nut-policies) | `hf upload` of `models/`, `results/`, `rollouts/` |
+| Model server (this page's API) | [`spaces/josyula/adamu-nut-eval`](https://huggingface.co/spaces/josyula/adamu-nut-eval), Docker | `space/make_space.sh --upload` |
+| Static page | GitHub Pages | `pages/make_pages.sh <dir>`, then push `<dir>` |
+
+The Space image (`space/Dockerfile`) installs both environments with CPU (or, with `--build-arg TORCH=cu121`, CUDA)
+wheels, clones the two upstream repositories, downloads the models from the model repo and runs `webapp/run.sh` on
+port 7860 with software rendering. The server sends `Access-Control-Allow-Origin` (`ALLOW_ORIGIN`, default `*`) so
+the GitHub Pages copy can call it, and refuses new episodes with HTTP 429 once `MAX_QUEUE` (8) are waiting for a
+worker. The Pages copy is the same `index.html` with `<meta name="eval-api">` set to the Space URL; `?api=<url>` on
+the page URL points it at any other server.
+
+On the free CPU Space (2 vCPU) an episode takes about 5 to 10 s for DP, ACT, DSRL and DexScrew and about a minute
+for Touch in the Wild, and the Space sleeps after 48 hours without visitors (the page waits while it wakes). For GPU
+speed, switch the Space hardware to a T4 and rebuild with `TORCH=cu121`.
 
 ---
 

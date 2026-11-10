@@ -3,7 +3,9 @@ both workers import this)."""
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-M = REPO / "models"
+import os
+DATA = Path(os.environ.get("ADAMU_DATA", REPO))       # folder holding models/ and results/
+M = DATA / "models"
 
 CAM_CONDS = [("ideal", "Ideal (nominal sim)"), ("real", "Real-robot stand-in"), ("sim", "Randomised training sim")]
 TW_CONDS = [("nominal", "Ideal (nominal sim)"), ("bump", "Bump at grasp")]

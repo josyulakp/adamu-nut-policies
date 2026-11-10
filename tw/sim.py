@@ -27,6 +27,7 @@ os.environ.setdefault("MUJOCO_GL", "egl")
 from env import NUT_HALF_H, TABLE_TOP, NutPickPlaceEnv, ScriptedExpert  # noqa: E402
 from kin import pinch_rot  # noqa: E402
 from tactile import FlexiTacPads  # noqa: E402
+from fast_render import make_renderer  # noqa: E402
 
 SCENE = ROOT / "adamu_nut_tactile" / "assets" / "scene_cam.xml"
 IMG = 224
@@ -40,7 +41,7 @@ class TactileSim(NutPickPlaceEnv):
     def __init__(self, render=True):
         super().__init__(scene=SCENE)
         self.pads = FlexiTacPads(self.m)
-        self.rend = mujoco.Renderer(self.m, IMG, IMG) if render else None
+        self.rend = make_renderer(self.m, IMG, IMG) if render else None
         self.opt = mujoco.MjvOption(); self.opt.sitegroup[:] = 0
         self.sites = [self.m.site(s).id for s in ("left_tactile", "right_tactile")]
         self._calib_width()

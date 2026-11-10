@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="eval-api" content="">  <!-- model server URL when this page is hosted elsewhere (e.g. GitHub Pages); empty = same origin -->
 <title>Nut Pick Eval</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -158,6 +159,9 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 const $ = (id) => document.getElementById(id);
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+// Model server: ?api=<url> overrides the <meta name="eval-api"> value; empty means the server that served this page.
+const API = (new URLSearchParams(location.search).get("api") || document.querySelector('meta[name="eval-api"]').content || "").replace(/\/+$/, "");
+const api = (p) => (API ? `${API}/${p}` : p);
 const getJSON = (u) => fetch(u).then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.error || r.status); }));
 const postJSON = (u, b) => fetch(u, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) })
   .then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.error || r.status); }));
@@ -228,7 +232,17 @@ function placeMarkers() {   // move nut and target bodies immediately while drag
 }
 
 // ------------------------------------------------------------------ config, model picker
-const cfg = await getJSON("api/config");
+const cfg = await (async () => {      // a sleeping Hugging Face Space takes a minute or two to wake up: keep trying
+  for (let i = 0; ; i++) {
+    try { return await getJSON(api("api/config")); }
+    catch (e) {
+      $("loading").hidden = false;
+      $("loading").textContent = `Waiting for the model server${API ? " (" + new URL(API).host + ")" : ""} to start… ` +
+        `This can take 1–3 minutes if it was asleep. (${i * 5} s)`;
+      await new Promise((r) => setTimeout(r, 5000));
+    }
+  }
+})();
 const MODELS = Object.fromEntries(cfg.models.map((m) => [m.id, m]));
 const R = cfg.regions;
 let layout = { nut: [0.32, -0.26, 20 * Math.PI / 180], target: [0.31, -0.03] };
@@ -334,7 +348,7 @@ function schedulePreview() { clearTimeout(previewTimer); previewTimer = setTimeo
 async function preview() {
   const m = MODELS[$("model").value];
   await useVariant(m.variant);
-  const res = await postJSON("api/preview", { model: m.id, seed: +$("seed").value, layout: usingSeedLayout ? null : layout });
+  const res = await postJSON(api("api/preview"), { model: m.id, seed: +$("seed").value, layout: usingSeedLayout ? null : layout });
   layout = { nut: res.nut, target: res.target.slice(0, 2) };
   updateMap();
   if (running) return;
@@ -408,7 +422,7 @@ $("pick").onclick = async () => {
   await useVariant(m.variant);
   const lay = usingSeedLayout ? null : { nut: [...layout.nut], target: [...layout.target] };
   let job;
-  try { job = (await postJSON("api/run", { model: m.id, cond, seed, layout: lay })).job; }
+  try { job = (await postJSON(api("api/run"), { model: m.id, cond, seed, layout: lay })).job; }
   catch (e) { $("status").textContent = "Could not start: " + e.message; return; }
   const ep = { id: job, model: m.id, cond, seed, layout: { nut: [...layout.nut], target: [...layout.target] }, frames: [], end: null };
   runs.push(ep); episode = ep; frame = 0; clock = 0; running = true; $("pick").disabled = true;
@@ -416,7 +430,7 @@ $("pick").onclick = async () => {
   const t0 = performance.now();
   while (!ep.end) {
     let r;
-    try { r = await getJSON(`api/job?id=${job}&from=${ep.frames.length}`); }
+    try { r = await getJSON(api(`api/job?id=${job}&from=${ep.frames.length}`)); }
     catch (e) { $("status").textContent = "Lost contact with the server: " + e.message; break; }
     ep.frames.push(...r.frames);
     if (r.end) ep.end = r.end;

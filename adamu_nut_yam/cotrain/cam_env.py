@@ -32,6 +32,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from env import NutPickPlaceEnv, ScriptedExpert  # noqa: E402
+from fast_render import make_renderer  # noqa: E402
 
 SCENE_CAM = ROOT / "assets" / "scene_cam.xml"
 CAMS = ("head_cam", "wrist_cam")
@@ -46,7 +47,7 @@ class CamEnv(NutPickPlaceEnv):
         assert domain in ("sim", "real", "ideal")
         self.domain, self.img = domain, img
         m = self.m
-        self.renderer = mujoco.Renderer(m, img, img)
+        self.renderer = make_renderer(m, img, img)
         self.vopt = mujoco.MjvOption(); self.vopt.sitegroup[:] = 0
         self.cam_ids = [m.camera(c).id for c in CAMS]
         self.head_cam = m.camera("head_cam").id

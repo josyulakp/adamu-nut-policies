@@ -1,0 +1,14 @@
+# environments and upstream code (setup/setup.sh)
+.venv
+.venv-tw
+ext
+# training outputs and datasets
+adamu_nut_yam/cotrain/runs/
+adamu_nut_yam/cotrain/data/
+tw/runs/
+tw/data/
+ds/runs/
+outputs/
+__pycache__/
+*.pyc
+MUJOCO_LOG.TXT

@@ -1,0 +1,37 @@
+<mujoco model="adam_u yam-gripper nut pick and place">
+  <include file="adam_u_fixed.xml" />
+  <option timestep="0.002" integrator="implicitfast" cone="elliptic" impratio="10" />
+  <size memory="200M" />
+  <statistic center="0.3 -0.1 1.1" extent="1.0" />
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
+    <global azimuth="210" elevation="-25" offwidth="960" offheight="720" />
+  </visual>
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072" />
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300" />
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2" />
+    <material name="table" rgba="0.62 0.52 0.40 1" />
+    <material name="steel" rgba="0.72 0.74 0.78 1" specular="0.6" shininess="0.6" />
+    <mesh name="nut_visual" file="nut_visual.stl" />
+    <mesh name="nut_collision" file="nut_collision.stl" />
+  </asset>
+  <worldbody>
+    <light pos="0.4 -0.4 3.0" dir="0 0 -1" directional="true" />
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" />
+    <body name="table" pos="0.42 -0.1 0.49">
+      <geom name="table_top" type="box" size="0.22 0.38 0.49" material="table" friction="0.8 0.01 0.001" />
+    </body>
+    <body name="target" pos="0.36 -0.05 0.98">
+      <geom name="target_pad" type="cylinder" size="0.035 0.0005" rgba="0.2 0.75 0.35 0.9" contype="0" conaffinity="0" />
+      <site name="target" size="0.004" rgba="0.1 0.5 0.2 1" />
+    </body>
+    <body name="nut" pos="0.36 -0.25 0.9881">
+      <freejoint name="nut_free" />
+      <inertial pos="0 0 0" mass="0.03" diaginertia="2.0e-6 2.0e-6 2.7e-6" />
+      <geom name="nut_visual" type="mesh" mesh="nut_visual" material="steel" contype="0" conaffinity="0" group="2" />
+      <geom name="nut_col" type="mesh" mesh="nut_collision" group="3" friction="1.5 0.08 0.002" condim="4" solref="0.004 1" />
+      <site name="nut_center" size="0.003" rgba="1 0 0 1" />
+    </body>
+  </worldbody>
+</mujoco>

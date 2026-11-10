@@ -1,0 +1,67 @@
+{"eval": 0, "mode": "base", "success": 0.62, "time": 55}
+{"episodes": 50, "chunks": 1536, "train_success_last50": 0.76, "q_loss": 0.0007, "pi_loss": -8.417, "alpha": 0.09212896935641765, "q_mean": 0.392, "qw_loss": 0.001, "time": 118}
+{"episodes": 75, "chunks": 2016, "train_success_last50": 0.76, "q_loss": 0.0005, "pi_loss": -7.113, "alpha": 0.0768962163478136, "q_mean": 0.421, "qw_loss": 0.0033, "time": 192}
+{"episodes": 100, "chunks": 2784, "train_success_last50": 0.8, "q_loss": 0.0007, "pi_loss": -5.483, "alpha": 0.05763162299990654, "q_mean": 0.468, "qw_loss": 0.0026, "time": 312}
+{"episodes": 125, "chunks": 3312, "train_success_last50": 0.76, "q_loss": 0.0018, "pi_loss": -4.66, "alpha": 0.04727331325411797, "q_mean": 0.544, "qw_loss": 0.0017, "time": 395}
+{"episodes": 151, "chunks": 4000, "train_success_last50": 0.72, "q_loss": 0.0008, "pi_loss": -3.798, "alpha": 0.03651956394314766, "q_mean": 0.595, "qw_loss": 0.0024, "time": 502}
+{"episodes": 175, "chunks": 4688, "train_success_last50": 0.64, "q_loss": 0.0024, "pi_loss": -3.094, "alpha": 0.028213066700845956, "q_mean": 0.629, "qw_loss": 0.0089, "time": 610}
+{"episodes": 200, "chunks": 5328, "train_success_last50": 0.68, "q_loss": 0.002, "pi_loss": -2.615, "alpha": 0.022192813735455275, "q_mean": 0.656, "qw_loss": 0.0053, "time": 710}
+{"episodes": 225, "chunks": 6000, "train_success_last50": 0.7, "q_loss": 0.0036, "pi_loss": -2.131, "alpha": 0.017249625734984876, "q_mean": 0.638, "qw_loss": 0.0039, "time": 815}
+{"episodes": 250, "chunks": 6624, "train_success_last50": 0.7, "q_loss": 0.005, "pi_loss": -1.826, "alpha": 0.01365146110765636, "q_mean": 0.62, "qw_loss": 0.0063, "time": 912}
+{"eval": 250, "mode": "det", "success": 0.7, "time": 943}
+{"episodes": 277, "chunks": 7520, "train_success_last50": 0.74, "q_loss": 0.0051, "pi_loss": -1.423, "alpha": 0.009759178385138512, "q_mean": 0.601, "qw_loss": 0.0069, "time": 1084}
+{"episodes": 301, "chunks": 8192, "train_success_last50": 0.74, "q_loss": 0.0054, "pi_loss": -1.246, "alpha": 0.007591307512484491, "q_mean": 0.593, "qw_loss": 0.0153, "time": 1189}
+{"episodes": 325, "chunks": 8656, "train_success_last50": 0.78, "q_loss": 0.0059, "pi_loss": -1.113, "alpha": 0.006384431710466742, "q_mean": 0.595, "qw_loss": 0.0136, "time": 1262}
+{"episodes": 351, "chunks": 9424, "train_success_last50": 0.74, "q_loss": 0.008, "pi_loss": -1.034, "alpha": 0.004802046553231775, "q_mean": 0.587, "qw_loss": 0.0101, "time": 1381}
+{"episodes": 375, "chunks": 9936, "train_success_last50": 0.7, "q_loss": 0.0062, "pi_loss": -0.942, "alpha": 0.003977371426299214, "q_mean": 0.592, "qw_loss": 0.0116, "time": 1461}
+{"episodes": 401, "chunks": 10592, "train_success_last50": 0.78, "q_loss": 0.0054, "pi_loss": -0.83, "alpha": 0.0031304540927521883, "q_mean": 0.579, "qw_loss": 0.0149, "time": 1564}
+{"episodes": 425, "chunks": 11280, "train_success_last50": 0.72, "q_loss": 0.007, "pi_loss": -0.79, "alpha": 0.002437992987688631, "q_mean": 0.566, "qw_loss": 0.0104, "time": 1672}
+{"episodes": 450, "chunks": 11952, "train_success_last50": 0.7, "q_loss": 0.005, "pi_loss": -0.758, "alpha": 0.0019197619927581399, "q_mean": 0.559, "qw_loss": 0.0109, "time": 1777}
+{"episodes": 475, "chunks": 12624, "train_success_last50": 0.68, "q_loss": 0.0075, "pi_loss": -0.658, "alpha": 0.001518894120818004, "q_mean": 0.539, "qw_loss": 0.0132, "time": 1882}
+{"episodes": 500, "chunks": 13264, "train_success_last50": 0.68, "q_loss": 0.0052, "pi_loss": -0.72, "alpha": 0.0012239846284501255, "q_mean": 0.551, "qw_loss": 0.0143, "time": 1982}
+{"eval": 500, "mode": "det", "success": 0.74, "time": 2011}
+{"episodes": 525, "chunks": 13984, "train_success_last50": 0.78, "q_loss": 0.0055, "pi_loss": -0.683, "alpha": 0.0009681079536676407, "q_mean": 0.547, "qw_loss": 0.0175, "time": 2124}
+{"episodes": 550, "chunks": 14624, "train_success_last50": 0.82, "q_loss": 0.005, "pi_loss": -0.627, "alpha": 0.0007842584367608651, "q_mean": 0.531, "qw_loss": 0.0163, "time": 2225}
+{"episodes": 575, "chunks": 15264, "train_success_last50": 0.8, "q_loss": 0.0042, "pi_loss": -0.615, "alpha": 0.0006368151429342106, "q_mean": 0.532, "qw_loss": 0.0143, "time": 2325}
+{"episodes": 600, "chunks": 15984, "train_success_last50": 0.76, "q_loss": 0.0051, "pi_loss": -0.64, "alpha": 0.0005098141438793391, "q_mean": 0.524, "qw_loss": 0.0135, "time": 2438}
+{"episodes": 625, "chunks": 16544, "train_success_last50": 0.76, "q_loss": 0.0053, "pi_loss": -0.616, "alpha": 0.00043039631709689273, "q_mean": 0.528, "qw_loss": 0.0103, "time": 2526}
+{"episodes": 650, "chunks": 17248, "train_success_last50": 0.76, "q_loss": 0.0045, "pi_loss": -0.591, "alpha": 0.0003567928710253909, "q_mean": 0.521, "qw_loss": 0.0122, "time": 2636}
+{"episodes": 675, "chunks": 17872, "train_success_last50": 0.72, "q_loss": 0.0044, "pi_loss": -0.631, "alpha": 0.0003097607885138132, "q_mean": 0.512, "qw_loss": 0.0106, "time": 2733}
+{"episodes": 700, "chunks": 18496, "train_success_last50": 0.8, "q_loss": 0.0057, "pi_loss": -0.587, "alpha": 0.00027635343139991163, "q_mean": 0.496, "qw_loss": 0.0097, "time": 2831}
+{"episodes": 725, "chunks": 19104, "train_success_last50": 0.78, "q_loss": 0.0049, "pi_loss": -0.588, "alpha": 0.000256590913340915, "q_mean": 0.49, "qw_loss": 0.0126, "time": 2926}
+{"episodes": 750, "chunks": 19824, "train_success_last50": 0.66, "q_loss": 0.0068, "pi_loss": -0.576, "alpha": 0.0002487729449057952, "q_mean": 0.476, "qw_loss": 0.0088, "time": 3038}
+{"eval": 750, "mode": "det", "success": 0.68, "time": 3068}
+{"episodes": 776, "chunks": 20528, "train_success_last50": 0.8, "q_loss": 0.0062, "pi_loss": -0.583, "alpha": 0.0002478178663295694, "q_mean": 0.479, "qw_loss": 0.012, "time": 3178}
+{"episodes": 800, "chunks": 21152, "train_success_last50": 0.84, "q_loss": 0.0084, "pi_loss": -0.568, "alpha": 0.000242829375929432, "q_mean": 0.463, "qw_loss": 0.0123, "time": 3276}
+{"episodes": 825, "chunks": 21760, "train_success_last50": 0.8, "q_loss": 0.005, "pi_loss": -0.534, "alpha": 0.0002331796014914289, "q_mean": 0.48, "qw_loss": 0.0182, "time": 3370}
+{"episodes": 850, "chunks": 22448, "train_success_last50": 0.84, "q_loss": 0.0044, "pi_loss": -0.58, "alpha": 0.0002378215729549993, "q_mean": 0.483, "qw_loss": 0.0117, "time": 3478}
+{"episodes": 876, "chunks": 23056, "train_success_last50": 0.8, "q_loss": 0.007, "pi_loss": -0.525, "alpha": 0.00024050877618719824, "q_mean": 0.457, "qw_loss": 0.0204, "time": 3573}
+{"episodes": 901, "chunks": 23776, "train_success_last50": 0.7, "q_loss": 0.0069, "pi_loss": -0.571, "alpha": 0.00024668305850354954, "q_mean": 0.455, "qw_loss": 0.0114, "time": 3687}
+{"episodes": 926, "chunks": 24384, "train_success_last50": 0.72, "q_loss": 0.0065, "pi_loss": -0.528, "alpha": 0.0002476201028912328, "q_mean": 0.467, "qw_loss": 0.012, "time": 3782}
+{"episodes": 950, "chunks": 25024, "train_success_last50": 0.76, "q_loss": 0.0053, "pi_loss": -0.541, "alpha": 0.0002408516258583404, "q_mean": 0.446, "qw_loss": 0.0107, "time": 3882}
+{"episodes": 975, "chunks": 25712, "train_success_last50": 0.66, "q_loss": 0.0067, "pi_loss": -0.515, "alpha": 0.0002541635840316303, "q_mean": 0.447, "qw_loss": 0.0152, "time": 3990}
+{"episodes": 1000, "chunks": 26208, "train_success_last50": 0.72, "q_loss": 0.0068, "pi_loss": -0.525, "alpha": 0.00025774045061552895, "q_mean": 0.452, "qw_loss": 0.0135, "time": 4068}
+{"eval": 1000, "mode": "det", "success": 0.72, "time": 4095}
+{"episodes": 1025, "chunks": 26896, "train_success_last50": 0.88, "q_loss": 0.0045, "pi_loss": -0.543, "alpha": 0.00025929701077984644, "q_mean": 0.451, "qw_loss": 0.0164, "time": 4204}
+{"episodes": 1052, "chunks": 27552, "train_success_last50": 0.82, "q_loss": 0.0051, "pi_loss": -0.535, "alpha": 0.00026022892707260324, "q_mean": 0.447, "qw_loss": 0.0153, "time": 4306}
+{"episodes": 1075, "chunks": 28208, "train_success_last50": 0.8, "q_loss": 0.0081, "pi_loss": -0.516, "alpha": 0.00026069496962008996, "q_mean": 0.438, "qw_loss": 0.0137, "time": 4409}
+{"episodes": 1102, "chunks": 28880, "train_success_last50": 0.76, "q_loss": 0.0073, "pi_loss": -0.497, "alpha": 0.00026751101977424697, "q_mean": 0.428, "qw_loss": 0.0148, "time": 4513}
+{"episodes": 1126, "chunks": 29456, "train_success_last50": 0.76, "q_loss": 0.0093, "pi_loss": -0.499, "alpha": 0.00026822613435797395, "q_mean": 0.432, "qw_loss": 0.0157, "time": 4603}
+{"episodes": 1150, "chunks": 30096, "train_success_last50": 0.84, "q_loss": 0.0074, "pi_loss": -0.549, "alpha": 0.00025663057022029534, "q_mean": 0.438, "qw_loss": 0.0219, "time": 4703}
+{"episodes": 1176, "chunks": 30720, "train_success_last50": 0.78, "q_loss": 0.0083, "pi_loss": -0.524, "alpha": 0.0002657015196746215, "q_mean": 0.415, "qw_loss": 0.0262, "time": 4800}
+{"episodes": 1200, "chunks": 31408, "train_success_last50": 0.78, "q_loss": 0.0102, "pi_loss": -0.488, "alpha": 0.00025857566797640177, "q_mean": 0.418, "qw_loss": 0.0106, "time": 4908}
+{"episodes": 1225, "chunks": 31968, "train_success_last50": 0.76, "q_loss": 0.0112, "pi_loss": -0.482, "alpha": 0.00025556729378877207, "q_mean": 0.397, "qw_loss": 0.0236, "time": 4996}
+{"episodes": 1250, "chunks": 32640, "train_success_last50": 0.74, "q_loss": 0.0109, "pi_loss": -0.463, "alpha": 0.00025595981132937596, "q_mean": 0.394, "qw_loss": 0.0105, "time": 5101}
+{"eval": 1250, "mode": "det", "success": 0.84, "time": 5129}
+{"episodes": 1276, "chunks": 33328, "train_success_last50": 0.86, "q_loss": 0.0106, "pi_loss": -0.482, "alpha": 0.0002511055165086873, "q_mean": 0.378, "qw_loss": 0.0215, "time": 5237}
+{"episodes": 1300, "chunks": 33968, "train_success_last50": 0.86, "q_loss": 0.0125, "pi_loss": -0.478, "alpha": 0.00026549079484539106, "q_mean": 0.384, "qw_loss": 0.0818, "time": 5337}
+{"episodes": 1326, "chunks": 34672, "train_success_last50": 0.84, "q_loss": 0.0148, "pi_loss": -0.518, "alpha": 0.00028556340257637205, "q_mean": 0.355, "qw_loss": 0.0484, "time": 5447}
+{"episodes": 1352, "chunks": 35312, "train_success_last50": 0.8, "q_loss": 0.0128, "pi_loss": -0.459, "alpha": 0.00028191413584863765, "q_mean": 0.353, "qw_loss": 0.0177, "time": 5547}
+{"episodes": 1375, "chunks": 35872, "train_success_last50": 0.76, "q_loss": 0.0157, "pi_loss": -0.479, "alpha": 0.00028235141799086704, "q_mean": 0.36, "qw_loss": 0.0129, "time": 5635}
+{"episodes": 1402, "chunks": 36528, "train_success_last50": 0.84, "q_loss": 0.0097, "pi_loss": -0.43, "alpha": 0.0002730141393840313, "q_mean": 0.367, "qw_loss": 0.0187, "time": 5738}
+{"episodes": 1425, "chunks": 37216, "train_success_last50": 0.8, "q_loss": 0.011, "pi_loss": -0.447, "alpha": 0.0002625920213176869, "q_mean": 0.343, "qw_loss": 0.0177, "time": 5846}
+{"episodes": 1450, "chunks": 37760, "train_success_last50": 0.82, "q_loss": 0.0104, "pi_loss": -0.437, "alpha": 0.00026659900322556496, "q_mean": 0.35, "qw_loss": 0.0224, "time": 5930}
+{"episodes": 1475, "chunks": 38304, "train_success_last50": 0.88, "q_loss": 0.0094, "pi_loss": -0.456, "alpha": 0.000273112760623917, "q_mean": 0.351, "qw_loss": 0.0227, "time": 6016}
+{"episodes": 1500, "chunks": 38912, "train_success_last50": 0.82, "q_loss": 0.0125, "pi_loss": -0.394, "alpha": 0.000278345969854854, "q_mean": 0.323, "qw_loss": 0.0223, "time": 6111}
+{"eval": 1500, "mode": "det", "success": 0.64, "time": 6139}
+{"eval": 1500, "mode": "stoch", "success": 0.68, "time": 6169}

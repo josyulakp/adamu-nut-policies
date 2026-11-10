@@ -40,14 +40,15 @@ KEYS = ("camera0_rgb", "camera0_tactile", "robot0_eef_pos", "robot0_eef_rot_axis
 
 def load(ckpt):
     """Either a full training checkpoint (<run>/checkpoints/latest.ckpt) or a slim release file (models/tw/*.pt:
-    the EMA policy weights in fp16 + the training config)."""
+    the EMA policy weights + the training config)."""
     payload = torch.load(open(ckpt, "rb"), pickle_module=dill, map_location="cpu", weights_only=False)
     cfg = payload["cfg"]
     cfg.policy.obs_encoder.pretrain_ckpt_path = None             # weights come from the checkpoint itself
     ws = hydra.utils.get_class(cfg._target_)(cfg)
-    if "ema_model_fp16" in payload:
+    slim = payload.get("ema_model", payload.get("ema_model_fp16"))
+    if slim is not None:
         pol = ws.ema_model if cfg.training.use_ema else ws.model
-        pol.load_state_dict({k: v.float() if v.is_floating_point() else v for k, v in payload["ema_model_fp16"].items()})
+        pol.load_state_dict({k: v.float() if v.is_floating_point() else v for k, v in slim.items()})
     else:
         ws.load_payload(payload, exclude_keys=None, include_keys=None)
         pol = ws.ema_model if cfg.training.use_ema else ws.model

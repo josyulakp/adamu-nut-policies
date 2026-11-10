@@ -220,7 +220,7 @@ The script collects 300 demos (`tw/data/nut_tactile.zarr.zip`, 1.5 GB), runs MAE
 bump. To train only the MAE policy against the released encoder, run `MAE=$PWD/models/tw/visuotactile_mae.pth
 tw/run_tw.sh`.
 
-`models/tw/*.pt` are the EMA policy weights in fp16 with the training config. `eval_policy.py` also accepts the
+`models/tw/*.pt` are the EMA policy weights (fp32) with the training config. `eval_policy.py` also accepts the
 full `checkpoints/latest.ckpt` from a training run. `models/tw/visuotactile_mae.pth` is the pretrained MAE (EMA
 weights, in their checkpoint format). It was trained on an earlier 300-demo dataset from the same expert, without
 the post-release frames or the bump demos; `run_tw.sh` pretrains it on the current dataset.
@@ -281,17 +281,34 @@ ds/run_ds.sh                     # OUT=<dir> to put training outputs elsewhere (
 | `dp/{sim_only,real_r10,real_r50,real_r100,co_r10_a025,co_r10_a05,co_r50_a05}.pt` | Diffusion Policy | 93 MB each |
 | `act/{act_sim_only,act_real_r50,act_co_r10_a05,act_co_r50_a05}.pt` | ACT | 89 MB each |
 | `dsrl/{dsrl_co_r50,dsrl_real_r50}/agent.pt` | DSRL noise policy (base DP in `dp/`) | 22 MB each |
-| `tw/{dp_vision,dp_tactile_cnn,dp_tactile_mae}.pt`, `tw/visuotactile_mae.pth` | Touch in the Wild | 185 to 580 MB |
+| `tw/{dp_vision,dp_tactile_cnn,dp_tactile_mae}.pt`, `tw/visuotactile_mae.pth` | Touch in the Wild | 0.7 to 1.2 GB; MAE 185 MB |
 | `ds/{teacher.pth,student.ckpt,stage3_ft.ckpt}` | DexScrew stages 1 to 3 | 1 MB each |
 
-The weights are stored in fp16 (small tensors such as normalisation statistics stay fp32) and are cast back to fp32
-on load.
+DP, ACT, DSRL and the MAE encoder are stored in fp16 (small tensors such as normalisation statistics stay fp32) and
+are cast back to fp32 on load. The Touch in the Wild policies are stored in fp32: the EMA weights and the training
+config, without optimiser state.
+
+**Released-model check.** Every released model was re-evaluated from this repository under the ideal condition
+(50 seeds):
+
+| Model | Successes, original | Successes, released file |
+|---|---|---|
+| DP: sim_only, co_r10_a025, co_r10_a05, co_r50_a05 | 40, 22, 17, 32 | 38, 23, 17, 30 |
+| DP real only (r10/r50/r100) | 0 | 0 |
+| ACT: sim_only, real_r50, co_r10_a05, co_r50_a05 | 7, 7, 7, 9 | 7, 6, 7, 9 |
+| DSRL: dsrl_co_r50, dsrl_real_r50 | 36, 0 | 34, 0 |
+| Touch in the Wild: vision, tactile_cnn, tactile_mae | 38, 33, 33 | 35, 32, 34 |
+| DexScrew: teacher, student, stage-3 fine-tune | 50, 40, 25 | 50, 40, 25 |
+
+The DP, ACT and DSRL evaluations fix the diffusion noise per seed, so their small differences come from fp16. The
+Touch in the Wild evaluator does not seed the diffusion sampling, so a repeat run of the same checkpoint varies by a
+few episodes (for example, the original vision checkpoint scored 38 and then 39).
 
 ## Rollouts (`rollouts/`)
 
 | Folder | Content |
 |---|---|
-| `cotrain/` | DP, ACT and DSRL episodes, real stand-in and ideal: `<model>_<domain>_<seed>.npz` (joint positions per step, gripper command, nut position, success) and `_cams.mp4` (head and wrist camera, what the policy saw) |
+| `cotrain/` | DP (`dp_sim`, `dp_co`, `dp_real` = real_r100), ACT (`act_co`) and DSRL (`dsrl_co`), seeds 2000000 to 2000002, real stand-in and ideal: `<model>_<domain>_<seed>.npz` (joint positions per step, gripper command, nut position, success) and `_cams.mp4` (head and wrist camera, what the policy saw) |
 | `tw/` | Touch in the Wild: `<model>_<cond>_<seed>.npz` with `rgb` (wrist camera), `tact` (12 x 64 tactile image), `qpos`, `grip`, `target`, `meta` |
 | `ds/` | DexScrew: `<stage>_<cond>_<seed>.npz` with `qpos`, `tact` (2 x 32 x 12), `grip`, `success` |
 

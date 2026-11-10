@@ -237,8 +237,11 @@ const cfg = await (async () => {      // a sleeping Hugging Face Space takes a m
     try { return await getJSON(api("api/config")); }
     catch (e) {
       $("loading").hidden = false;
-      $("loading").textContent = `Waiting for the model server${API ? " (" + new URL(API).host + ")" : ""} to start… ` +
-        `This can take 1–3 minutes if it was asleep. (${i * 5} s)`;
+      const host = API ? new URL(API).host : location.host;
+      $("loading").textContent = i < 36
+        ? `Waiting for the model server (${host}) to start… This can take 1–3 minutes if it was asleep. (${i * 5} s)`
+        : `Can't reach the model server at ${host}: it isn't running right now. If you run one yourself (webapp/run.sh), ` +
+          `add ?api=<its URL> to this page's address, e.g. ?api=http://localhost:8770. Still retrying every 5 s.`;
       await new Promise((r) => setTimeout(r, 5000));
     }
   }

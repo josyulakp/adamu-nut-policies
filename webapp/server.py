@@ -131,6 +131,7 @@ def make_handler(workers, preview):
             self.send_header("Access-Control-Allow-Origin", ALLOW_ORIGIN)
             self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
             self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            self.send_header("Access-Control-Allow-Private-Network", "true")   # public page -> localhost server (Chrome)
 
         def do_OPTIONS(self):
             self.send_response(204); self.cors(); self.send_header("Content-Length", "0"); self.end_headers()

@@ -47,7 +47,7 @@ def worker(remote, seed0, stride):
     torch.set_num_threads(1)
     from cam_env import CamEnv
     env = CamEnv(os.environ.get("DSRL_DOMAIN", "real"))   # online training / evaluation domain
-    seed, hist = seed0, None
+    seed, hist, last = seed0, None, {}
 
     def pack():
         return (np.stack([h["images"] for h in hist[-TO:]]), np.stack([h["proprio"] for h in hist[-TO:]]))
@@ -68,7 +68,10 @@ def worker(remote, seed0, stride):
                 if done:
                     break
             hist = hist[-TO:]
+            last = info
             remote.send((pack(), done, bool(info.get("success", False))))
+        elif cmd == "final":                     # final nut state of the last chunk (for failure analysis)
+            remote.send({k: float(last[k]) for k in ("xy_err", "tilt", "nut_z") if k in last})
         elif cmd == "close":
             return
 
@@ -93,6 +96,11 @@ class VecEnv:
         idx = range(self.n) if idx is None else idx
         for i, a in zip(idx, acts):
             self.remotes[i].send(("chunk", a))
+        return [self.remotes[i].recv() for i in idx]
+
+    def final(self, idx):
+        for i in idx:
+            self.remotes[i].send(("final", None))
         return [self.remotes[i].recv() for i in idx]
 
     def close(self):
@@ -290,7 +298,7 @@ def evaluate(base, agent, envs, seeds, mode):
     for k in range(0, len(seeds), n):
         ss = seeds[k:k + n]; idx = list(range(len(ss)))
         obs = dict(zip(idx, envs.reset(idx, ss)))
-        alive, out = set(idx), {}
+        alive, out, fin = set(idx), {}, {}
         steps = {i: 0 for i in idx}
         while alive:
             ids = sorted(alive)
@@ -303,8 +311,8 @@ def evaluate(base, agent, envs, seeds, mode):
             for i, (o, done, succ) in zip(ids, envs.chunk(acts, ids)):
                 obs[i] = o; steps[i] += 1
                 if done or steps[i] >= 40:
-                    out[i] = succ; alive.discard(i)
-        res += [{"seed": ss[i], "success": out[i]} for i in idx]
+                    out[i] = succ; alive.discard(i); fin[i] = envs.final([i])[0]
+        res += [dict(seed=ss[i], success=out[i], steps=steps[i] * TA, **fin[i]) for i in idx]
     return res
 
 

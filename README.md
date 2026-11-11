@@ -41,9 +41,9 @@ resting on the table and not touching the gripper, held for 10 consecutive contr
 | Touch in the Wild, wrist camera only (`models/tw/dp_vision.pt`) | 300 sim demos | **76%** | | **58%** | |
 | Touch in the Wild, camera + touch, SimpleCNN (`dp_tactile_cnn.pt`) | 300 sim demos | 66% | | 32% | |
 | Touch in the Wild, camera + touch, MAE (`dp_tactile_mae.pt`) | 300 sim demos + visuo-tactile MAE | 66% | | **58%** | |
-| DexScrew stage 1 teacher (`models/ds/teacher.pth`) | imitation of the scripted expert, randomised physics | **100%** | | 100% | 18% |
-| DexScrew stage 2 student (`models/ds/student.ckpt`) | distilled from the teacher | **80%** | | 0% | 20% |
-| DexScrew stage 3 fine-tune (`models/ds/stage3_ft.ckpt`) | student + BC on shifted-physics successes | 50% | | 0% | **58%** |
+| DexScrew stage 1 teacher (`models/ds/teacher.pth`) | imitation of the scripted expert, randomised physics | 28% | | 4% | **58%** |
+| DexScrew stage 2 student (`models/ds/student.ckpt`) | distilled from the teacher | 4% | | 6% | 10% |
+| DexScrew stage 3 fine-tune (`models/ds/stage3_ft.ckpt`) | student + BC on shifted-physics successes | 26% | | 8% | 16% |
 
 Conditions:
 
@@ -60,6 +60,13 @@ Conditions:
 
 Blank cells were not evaluated. The camera-policy and tactile-policy groups use different grippers (plain vs
 FlexiTac), so compare within a group. Per-seed results are in `results/`.
+
+**DexScrew correction (2026-11-10).** An earlier version of the DexScrew rows (100% / 80% / 50% ideal) was invalid:
+`NutRLEnv` applied its physics parameters with `mj_setConst` after the scene reset, which put the nut back at the
+same start pose (and the arm at its zero pose) in every episode. The fix is in `ds/nut_rl_env.py`; the teacher,
+student and fine-tune were retrained and re-evaluated, and the rows above are the new results. The privileged teacher
+reaches only 28% although the scripted expert it imitates succeeds 96.5% of the time, so the teacher recipe is the
+bottleneck. The DSRL result files were also re-evaluated to record final nut states (same success rates).
 
 ## Layout
 

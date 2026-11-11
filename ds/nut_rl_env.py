@@ -95,8 +95,10 @@ class NutRLEnv:
         if seed is not None:
             self.rng = np.random.default_rng(seed)
         self.P = self._params()
-        self.sim.reset(int(self.rng.integers(1 << 30)) if seed is None else seed)
+        # physics first: _apply ends with mj_setConst, which resets MjData to qpos0, so it must run before the scene
+        # is laid out (calling it after the reset put the nut at its default spot and the arm at zero in every episode)
         self._apply(self.P)
+        self.sim.reset(int(self.rng.integers(1 << 30)) if seed is None else seed)
         p, R = self.sim.eef_pose()
         self.pos_cmd = p.copy(); self.yaw_cmd = float(np.arctan2(R[1, 0], R[0, 0]))
         self.g = 0.0; self.t = 0; self.last_a = np.zeros(ACT_DIM, np.float32)

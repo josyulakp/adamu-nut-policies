@@ -1,0 +1,142 @@
+{
+ "DP sim only \u00b7 stand-in": {
+  "Never picked up": 39,
+  "Off target": 6,
+  "Tipped over": 1,
+  "Still held at timeout": 2,
+  "Off the table": 0,
+  "At target, not settled": 1,
+  "success": 1,
+  "n": 50
+ },
+ "DP real only (100) \u00b7 stand-in": {
+  "Never picked up": 12,
+  "Off target": 0,
+  "Tipped over": 1,
+  "Still held at timeout": 0,
+  "Off the table": 0,
+  "At target, not settled": 0,
+  "success": 37,
+  "n": 50
+ },
+ "DP co-trained \u00b7 stand-in": {
+  "Never picked up": 11,
+  "Off target": 1,
+  "Tipped over": 1,
+  "Still held at timeout": 0,
+  "Off the table": 0,
+  "At target, not settled": 0,
+  "success": 37,
+  "n": 50
+ },
+ "DP + DSRL \u00b7 stand-in": {
+  "Never picked up": 13,
+  "Off target": 2,
+  "Tipped over": 1,
+  "Still held at timeout": 2,
+  "Off the table": 0,
+  "At target, not settled": 0,
+  "success": 32,
+  "n": 50
+ },
+ "ACT co-trained \u00b7 stand-in": {
+  "Never picked up": 26,
+  "Off target": 1,
+  "Tipped over": 2,
+  "Still held at timeout": 0,
+  "Off the table": 0,
+  "At target, not settled": 0,
+  "success": 21,
+  "n": 50
+ },
+ "TW camera only \u00b7 ideal": {
+  "Never picked up": 1,
+  "Off target": 3,
+  "Tipped over": 8,
+  "Still held at timeout": 0,
+  "Off the table": 0,
+  "At target, not settled": 0,
+  "success": 38,
+  "n": 50
+ },
+ "TW camera only \u00b7 bump": {
+  "Never picked up": 1,
+  "Off target": 7,
+  "Tipped over": 7,
+  "Still held at timeout": 6,
+  "Off the table": 0,
+  "At target, not settled": 0,
+  "success": 29,
+  "n": 50
+ },
+ "TW touch (MAE) \u00b7 ideal": {
+  "Never picked up": 7,
+  "Off target": 3,
+  "Tipped over": 4,
+  "Still held at timeout": 1,
+  "Off the table": 2,
+  "At target, not settled": 0,
+  "success": 33,
+  "n": 50
+ },
+ "TW touch (MAE) \u00b7 bump": {
+  "Never picked up": 4,
+  "Off target": 4,
+  "Tipped over": 7,
+  "Still held at timeout": 4,
+  "Off the table": 1,
+  "At target, not settled": 1,
+  "success": 29,
+  "n": 50
+ },
+ "TW touch (CNN) \u00b7 ideal": {
+  "Never picked up": 2,
+  "Off target": 8,
+  "Tipped over": 5,
+  "Still held at timeout": 0,
+  "Off the table": 2,
+  "At target, not settled": 0,
+  "success": 33,
+  "n": 50
+ },
+ "TW touch (CNN) \u00b7 bump": {
+  "Never picked up": 4,
+  "Off target": 13,
+  "Tipped over": 13,
+  "Still held at timeout": 2,
+  "Off the table": 2,
+  "At target, not settled": 0,
+  "success": 16,
+  "n": 50
+ },
+ "DexScrew student \u00b7 ideal": {
+  "Never picked up": 3,
+  "Off target": 13,
+  "Tipped over": 32,
+  "Still held at timeout": 0,
+  "Off the table": 0,
+  "At target, not settled": 0,
+  "success": 2,
+  "n": 50
+ },
+ "DexScrew fine-tuned \u00b7 ideal": {
+  "Never picked up": 4,
+  "Off target": 7,
+  "Tipped over": 26,
+  "Still held at timeout": 0,
+  "Off the table": 0,
+  "At target, not settled": 0,
+  "success": 13,
+  "n": 50
+ },
+ "DexScrew fine-tuned \u00b7 bump": {
+  "Never picked up": 5,
+  "Off target": 20,
+  "Tipped over": 21,
+  "Still held at timeout": 0,
+  "Off the table": 0,
+  "At target, not settled": 0,
+  "success": 4,
+  "n": 50
+ }
+}

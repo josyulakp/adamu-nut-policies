@@ -13,9 +13,10 @@ PPO training, 30% of episodes have the bump; seeds 5_000_000+ (evaluation uses 2
 
   python ds/bc_teacher.py --out ds/runs/teacher_bc
 
-Result (2026-11-10, eval_ds.py, 50 held-out seeds): round 0 (DART BC only) 50/50 nominal, 50/50 bump, 9/50 shifted;
-the DAgger rounds got worse (round 5: 34/50 nominal, 1/50 bump), presumably because the expert's labels depend on its
-hidden phase counters, which become inconsistent on policy-visited states. Round 0 is used as the stage-1 teacher.
+Result (eval_ds.py, 50 held-out seeds, after the nut_rl_env.py reset fix): round 0 (DART BC only) 14/50 nominal,
+2/50 bump, 29/50 shifted, from 1120 expert episodes (expert success 96.5%). The earlier 50/50 nominal and the DAgger
+comparison (round 5 worse than round 0) were measured with the reset bug, when every episode started from the same
+pose, and have not been repeated. Round 0 is used as the stage-1 teacher.
 """
 import argparse
 import json
